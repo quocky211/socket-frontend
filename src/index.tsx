@@ -4,10 +4,28 @@ import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
-import MainPage from "./Components/Page/MainPage";
 import Login from "./Components/Page/Login";
 import ToDoList from "./Components/Page/ToDoList";
+import  Dashboard  from "./Components/Page/Dashboard";
+import axios from "axios";
+import PageChat from "./Components/Page/PageChat";
 
+// must have => to sanctum laravel
+axios.defaults.withCredentials = true;
+
+// add header to request 
+axios.interceptors.request.use(
+  (config) => {
+    const token = document.cookie.replace(/(?:(?:^|.*;\s*)accessToken\s*=\s*([^;]*).*$)|^.*$/, '$1');
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 const router = createBrowserRouter([
   {
@@ -20,11 +38,15 @@ const router = createBrowserRouter([
       },
       {
         path: "home",
-        element: <MainPage />,
+        element: <PageChat />,
       },
       {
         path: "todolist",
         element: <ToDoList />,
+      },
+      {
+        path:'dashboard',
+        element: <Dashboard/>,
       },
     ],
   },

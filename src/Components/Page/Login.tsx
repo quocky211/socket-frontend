@@ -4,6 +4,7 @@ import {
   Avatar,
   Box,
   Button,
+  CircularProgress,
   CssBaseline,
   Grid,
   Link,
@@ -42,6 +43,7 @@ const Login = () => {
   const [isLogin, setIsLogin] = useState(false);
   const [message, setMessage] = useState("");
   const [severity, setSeverity] = useState("");
+  const [isLoading, setLoading] = useState(false);
   // Hàm để lưu token vào cookie
   const setCookie = (name: string, value: string) => {
     const cookieValue = encodeURIComponent(value);
@@ -50,15 +52,22 @@ const Login = () => {
 
   // function onclick -> login
   const onSubmit = (data: any) => {
+    setLoading(true);
     Auth.login(data)
       .then((res) => {
         if (res.data && res.data.token) {
           setCookie("accessToken", res.data.token);
-          localStorage.setItem("user", JSON.stringify(res.data.user));
           setSeverity("success");
           setMessage("Login success");
           setIsLogin(true);
-          navigate("home");
+          setLoading(false);
+          if (res.data.user.role === "user") {
+            localStorage.setItem("user", JSON.stringify(res.data.user));
+            navigate("home");
+          } else {
+            localStorage.setItem("admin", JSON.stringify(res.data.user));
+            navigate("dashboard");
+          }
         } else {
           setMessage("Unauthorized");
         }
@@ -67,6 +76,7 @@ const Login = () => {
         setIsLogin(true);
         setSeverity("error");
         setMessage("Email or Password is incorrect");
+        setLoading(false);
       });
   };
 
@@ -99,6 +109,7 @@ const Login = () => {
             alignItems: "center",
           }}
         >
+          {isLoading ? <CircularProgress /> : ""}
           <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
             <LockOutlinedIcon />
           </Avatar>
