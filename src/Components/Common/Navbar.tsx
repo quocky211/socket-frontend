@@ -9,8 +9,12 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import Auth from "../../Services/Auth";
 import { useNavigate } from "react-router-dom";
 import { Chat, Group, Person, Settings, WbSunny } from "@mui/icons-material";
+import { NotificationMessageContext } from "./NotificationProvider";
+import { useContext } from "react";
+import { FeatureContext } from "./FeatureProvider";
 
 export default function NavBar() {
+
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const isMenuOpen = Boolean(anchorEl);
 
@@ -20,9 +24,15 @@ export default function NavBar() {
     setAnchorEl(event.currentTarget);
   };
 
+  // handle menu close
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
+  // use context
+  const { theNuNotification, updateNumber } = useContext(
+    NotificationMessageContext
+  );
+  const { change } = useContext(FeatureContext);
 
   // handle logout
   const handleLogout = () => {
@@ -44,6 +54,7 @@ export default function NavBar() {
   };
 
   const menuId = "primary-search-account-menu";
+
   // Menu of account
   const renderMenu = (
     <Menu
@@ -67,31 +78,44 @@ export default function NavBar() {
     </Menu>
   );
 
+  const handleNotification = (feature: string) => {
+    change(feature);
+    updateNumber(0);
+  };
   return (
     <Box sx={{ bgcolor: "inherit" }}>
-      <Box pt={4}>
-        <IconButton size="large" color="inherit">
-          <Badge badgeContent={4} color="error">
-            <Chat fontSize='large'/>
+      <Box pt={4} display="grid">
+        <IconButton
+          size="large"
+          color="inherit"
+          sx={{ my: 1 }}
+          onClick={() => handleNotification("chat")}
+        >
+          <Chat fontSize="large" />
+        </IconButton>
+        <IconButton
+          size="large"
+          color="inherit"
+          sx={{ my: 1 }}
+          onClick={() => handleNotification("notification")}
+        >
+          <Badge badgeContent={theNuNotification} color="error">
+            <NotificationsIcon fontSize="large" />
           </Badge>
         </IconButton>
-        <IconButton size="large" color="inherit">
-          <Group fontSize='large'/>
+        <IconButton size="large" color="inherit" sx={{ my: 1 }}>
+          <Group fontSize="large" />
         </IconButton>
-        <IconButton size="large" color="inherit">
-          <Person fontSize='large'/>
-        </IconButton> 
-        <IconButton size="large" color="inherit">
-          <WbSunny fontSize='large'/>
-        </IconButton> 
-        <IconButton size="large" color="inherit">
-          <Settings fontSize='large'/>
+        <IconButton size="large" color="inherit" sx={{ my: 1 }}>
+          <Person fontSize="large" />
         </IconButton>
-        <IconButton size="large" color="inherit">
-          <Badge badgeContent={17} color="error">
-            <NotificationsIcon fontSize='large'/>
-          </Badge>
+        <IconButton size="large" color="inherit" sx={{ my: 1 }}>
+          <WbSunny fontSize="large" />
         </IconButton>
+        <IconButton size="large" color="inherit" sx={{ my: 1 }}>
+          <Settings fontSize="large" />
+        </IconButton>
+
         <IconButton
           size="large"
           aria-controls={menuId}
@@ -99,7 +123,7 @@ export default function NavBar() {
           onClick={handleProfileMenuOpen}
           color="inherit"
         >
-          <AccountCircle fontSize='large'/>
+          <AccountCircle fontSize="large" />
         </IconButton>
       </Box>
       {renderMenu}

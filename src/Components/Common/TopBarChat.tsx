@@ -1,21 +1,13 @@
 import React from "react";
 import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
-import Badge from "@mui/material/Badge";
 import MenuItem from "@mui/material/MenuItem";
 import Menu from "@mui/material/Menu";
-import AccountCircle from "@mui/icons-material/AccountCircle";
-import NotificationsIcon from "@mui/icons-material/Notifications";
 import {
   CallOutlined,
-  Chat,
-  Group,
   MoreHorizOutlined,
-  Person,
   Search,
-  Settings,
   VideoCameraFrontOutlined,
-  WbSunny,
 } from "@mui/icons-material";
 import { Avatar, Divider, Typography } from "@mui/material";
 
@@ -25,12 +17,13 @@ const TopBarChat = () => {
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
-
+  // handle menu close
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
-  const menuId = "primary-search-account-menu";
 
+  const menuId = "primary-search-account-menu";
+  // component menu
   const renderMenu = (
     <Menu
       anchorEl={anchorEl}
@@ -67,7 +60,7 @@ const TopBarChat = () => {
             src="https://www.google.com/url?sa=i&url=https%3A%2F%2Funsplash.com%2Fs%2Fphotos%2Fuser&psig=AOvVaw0IwMnn2RIVUejhe-NG2jMr&ust=1690543212448000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCICSgK_iroADFQAAAAAdAAAAABAR"
           />
           <Typography ml={3} fontSize={16} color="#eff2f7" lineHeight={3}>
-            Eriki
+            {JSON.parse(localStorage.getItem("user") as string).name}
           </Typography>
         </Box>
         <Box>

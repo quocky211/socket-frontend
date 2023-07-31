@@ -13,6 +13,7 @@ import { styled, alpha } from "@mui/material/styles";
 import SearchIcon from "@mui/icons-material/Search";
 import "./common.css";
 
+// style for search 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
   borderRadius: theme.shape.borderRadius,
@@ -29,6 +30,7 @@ const Search = styled("div")(({ theme }) => ({
   },
 }));
 
+// style for search icon 
 const SearchIconWrapper = styled("div")(({ theme }) => ({
   padding: theme.spacing(0, 2),
   height: "100%",
@@ -36,22 +38,29 @@ const SearchIconWrapper = styled("div")(({ theme }) => ({
   pointerEvents: "none",
   display: "flex",
   alignItems: "center",
+  color: "#7a7f9a",
   justifyContent: "center",
 }));
+
+// style for input 
 const StyledInputBase = styled(InputBase)(({ theme }) => ({
-  color: "inherit",
+  color: "#add4d2",
   "& .MuiInputBase-input": {
     padding: theme.spacing(1, 1, 1, 0),
     // vertical padding + font size from searchIcon
-    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
     transition: theme.transitions.create("width"),
     width: "100%",
     [theme.breakpoints.up("md")]: {
       width: "20ch",
     },
   },
+  "& .MuiInputBase-input::placeholder": {
+    color: "#abb4d2", // Màu chữ của placeholder (đỏ)
+    fontFamily: "Arial, sans-serif", // Font chữ của placeholder
+  },
 }));
 
+// style for badge icon
 const StyledBadge = styled(Badge)(({ theme }) => ({
   "& .MuiBadge-badge": {
     backgroundColor: "#44b700",
@@ -85,10 +94,11 @@ const Chat = () => {
   return (
     <Stack spacing={2} pt={2}>
       <Box display="block" textAlign="left" px={3}>
-        <Typography color="#eff2f7" variant="h6">
+        <Typography color="#eff2f7" variant="h5">
           Chats
         </Typography>
       </Box>
+      {/* Search  */}
       <Box>
         <Search>
           <SearchIconWrapper>
@@ -100,6 +110,7 @@ const Chat = () => {
           />
         </Search>
       </Box>
+      {/* friends active */}
       <Stack direction="row" spacing={2} px={3}>
         <Card sx={{ bgcolor: "#ffffff26" }}>
           <CardContent>
@@ -173,7 +184,8 @@ const Chat = () => {
       <Box textAlign="left" px={3}>
         <Typography color="#eff2f7">Recent</Typography>
       </Box>
-      <Box maxHeight={300} px={3} overflow="auto" className="container">
+      {/* Chats */}
+      <Box maxHeight="50vh" height="100vh" px={3} overflow="auto" className="container">
         <Stack direction="row">
           <CardContent>
             <StyledBadge
