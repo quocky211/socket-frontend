@@ -15,17 +15,18 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import axios from "axios";
-import { NotificationMessageContext } from "./NotificationProvider";
+// import { NotificationMessageContext } from "./NotificationProvider";
+import { ChatWithUserContext } from "./ChatWithUserProvider";
+import ApiMessage from "../../Services/Message";
 // import { format } from "date-fns-tz";
 
 /**
  * interface for Message
- * @property {string} username;
- * @property {string} message;
+ * @property {number} to_user_id
+ * @property {string} message
  */
 export interface Message {
-  username: string;
+  to_user_id: number;
   message: string;
 }
 
@@ -37,33 +38,43 @@ const Messenger = () => {
   const [allMessages, setAllMessages] = useState<Message[]>([]);
 
   // use context
-  const { updateNumber, updateMessages } = useContext(
-    NotificationMessageContext
-  );
+  // const { updateNumber, updateNotifications } = useContext(
+  //   NotificationMessageContext
+  // );
+
+  // use context to get to_user_id
+  const { to_user, to_username, messages, conversationId } =
+    useContext(ChatWithUserContext);
 
   // use Pusher
-  // Pusher.logToConsole = true;
   var pusher = new Pusher("96e68ac1a93c911b481f", {
     cluster: "ap1",
   });
 
   // connect to pusher event 'chat'
-  var channel = pusher.subscribe("chat");
+  var channel = pusher.subscribe("Chat-Conversation-" + conversationId);
 
   // variable for the number of notification
-  var i = 0;
+  // var i = 0;
+
   // function handle messages
   const handleNewMessage = (data: Message) => {
+    console.log(data);
     // format like: data = {"username": "John", "message": "Hi"}
     setAllMessages((prevMessages: any) => [...prevMessages, data]);
+
     // check current user
-    if(data.username !== JSON.parse(localStorage.getItem("user") as string).name){
-      i++;
-    }
+    // if (
+    //   data.username !== JSON.parse(localStorage.getItem("user") as string).name
+    // ) {
+    //   i++;
+    // }
+
     // update the number of notification
-    updateNumber(i);
+    // updateNumber(i);
+
     // update messages
-    updateMessages(data);
+    // updateNotifications(data);
   };
 
   // get messages from pusher
@@ -72,20 +83,18 @@ const Messenger = () => {
     return () => {
       channel.unbind("message", handleNewMessage);
     };
-  }, []);
+  }, [channel]);
 
   // function handle input message
   const handleSendMessage = () => {
     // get username from localstorage
-    const user = JSON.parse(localStorage.getItem("user") as string);
     const data = {
-      username: user?.name,
+      to_user_id: to_user,
       message: textInput,
     };
 
     // api post
-    axios
-      .post("http://localhost:8000/api/message", data)
+    ApiMessage.storeMessage(data)
       .then((res) => {
         setTextInput("");
       })
@@ -103,12 +112,12 @@ const Messenger = () => {
         overflow="auto"
         className="container"
       >
-        {/* display message */}
-        {allMessages.map((message, index) => {
+        {/* display message from DB*/}
+        {messages.map((message, index) => {
           // check message: message from the current user will have bg: #303841 and the others: #7269ef
           const isCurrentUser =
-            message.username ===
-            JSON.parse(localStorage.getItem("user") as string).name;
+            message.to_user_id !==
+            JSON.parse(localStorage.getItem("user") as string).id;
           const messageBox = isCurrentUser ? (
             <Box
               key={index}
@@ -124,7 +133,10 @@ const Messenger = () => {
               <Typography color="#eff2f7" fontSize={14} ml={3}>
                 {message.message}
               </Typography>
-              <Chip label={message.username} sx={{ color: "#eff2f7" }} />
+              <Chip
+                label={JSON.parse(localStorage.getItem("user") as string).name}
+                sx={{ color: "#eff2f7" }}
+              />
             </Box>
           ) : (
             <Box
@@ -140,7 +152,59 @@ const Messenger = () => {
               justifyContent="space-between"
             >
               <Chip
-                label={message.username}
+                label={to_username}
+                color="primary"
+                sx={{ color: "#eff2f7" }}
+              />
+              <Typography color="#eff2f7" fontSize={14} mr={3}>
+                {message.message}
+              </Typography>
+            </Box>
+          );
+
+          return messageBox;
+        })}
+        {/* display message realtime */}
+        {allMessages.map((message, index) => {
+          // check message: message from the current user will have bg: #303841 and the others: #7269ef
+          const isCurrentUser =
+            message.to_user_id !==
+            JSON.parse(localStorage.getItem("user") as string).id;
+          const messageBox = isCurrentUser ? (
+            <Box
+              key={index}
+              mt={2}
+              p={2}
+              bgcolor="#303841"
+              borderRadius={2}
+              display="flex"
+              maxWidth={300}
+              marginLeft="auto"
+              justifyContent="space-between"
+            >
+              <Typography color="#eff2f7" fontSize={14} ml={3}>
+                {message.message}
+              </Typography>
+              <Chip
+                label={JSON.parse(localStorage.getItem("user") as string).name}
+                sx={{ color: "#eff2f7" }}
+              />
+            </Box>
+          ) : (
+            <Box
+              key={index}
+              mt={2}
+              p={2}
+              bgcolor="#7269ef"
+              borderRadius={2}
+              display="flex"
+              width="contents"
+              marginRight="auto"
+              maxWidth={300}
+              justifyContent="space-between"
+            >
+              <Chip
+                label={to_username}
                 color="primary"
                 sx={{ color: "#eff2f7" }}
               />

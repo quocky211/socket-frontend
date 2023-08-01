@@ -2,18 +2,22 @@ import {
   Avatar,
   Badge,
   Box,
+  Button,
   Card,
   CardContent,
   InputBase,
   Stack,
   Typography,
 } from "@mui/material";
-import React from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { styled, alpha } from "@mui/material/styles";
 import SearchIcon from "@mui/icons-material/Search";
 import "./common.css";
+import ApiUser from "../../Services/User";
+import { ChatWithUserContext } from "./ChatWithUserProvider";
+import Message from "../../Services/Message";
 
-// style for search 
+// style for search
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
   borderRadius: theme.shape.borderRadius,
@@ -30,7 +34,7 @@ const Search = styled("div")(({ theme }) => ({
   },
 }));
 
-// style for search icon 
+// style for search icon
 const SearchIconWrapper = styled("div")(({ theme }) => ({
   padding: theme.spacing(0, 2),
   height: "100%",
@@ -42,7 +46,7 @@ const SearchIconWrapper = styled("div")(({ theme }) => ({
   justifyContent: "center",
 }));
 
-// style for input 
+// style for input
 const StyledInputBase = styled(InputBase)(({ theme }) => ({
   color: "#add4d2",
   "& .MuiInputBase-input": {
@@ -90,7 +94,65 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
   },
 }));
 
+interface User {
+  id: number;
+  name: string;
+}
+
 const Chat = () => {
+  // state for users
+  const [users, setUsers] = useState<User[]>([]);
+
+  // handle show message with user
+
+  const { changeUser, updateMessages, updateConversationId } =
+    useContext(ChatWithUserContext);
+
+  // call api get users
+  useEffect(() => {
+    getListFriends();
+  }, []);
+
+  // handle get list users
+  const getListFriends = () => {
+    ApiUser.getAllUsers()
+      .then((res) => {
+        setUsers(res.data);
+        // default value when open browser
+        changeUser(res.data[0].id, res.data[0].name);
+        Message.getMessagesWithUser(res.data[0].id).then((res1) => {
+          updateMessages(res1.data);
+        });
+        Message.getConversatiion(res.data[0].id).then((res1) => {
+          updateConversationId(res1.data);
+        });
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  // handle click change user conversation
+  const handleShowMessage = (user: User) => {
+    changeUser(user.id, user.name);
+    // api get all messages with a user
+    Message.getMessagesWithUser(user.id)
+      .then((res) => {
+        updateMessages(res.data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+
+    // api get conversation id
+    Message.getConversatiion(user.id)
+      .then((res) => {
+        updateConversationId(res.data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
   return (
     <Stack spacing={2} pt={2}>
       <Box display="block" textAlign="left" px={3}>
@@ -185,169 +247,54 @@ const Chat = () => {
         <Typography color="#eff2f7">Recent</Typography>
       </Box>
       {/* Chats */}
-      <Box maxHeight="50vh" height="100vh" px={3} overflow="auto" className="container">
-        <Stack direction="row">
-          <CardContent>
-            <StyledBadge
-              overlap="circular"
-              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-              variant="dot"
-            >
-              <Avatar
-                alt="Remy Sharp"
-                src="https://www.google.com/url?sa=i&url=https%3A%2F%2Funsplash.com%2Fs%2Fphotos%2Fuser&psig=AOvVaw0IwMnn2RIVUejhe-NG2jMr&ust=1690543212448000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCICSgK_iroADFQAAAAAdAAAAABAR"
-              />
-            </StyledBadge>
-          </CardContent>
-          <Box pt={2} width={300} textAlign="left">
-            <Typography color="#eff2f7" fontSize={15}>
-              Erik
-            </Typography>
-            <Typography color="#add4d2" fontSize={14}>
-              Hehehehehehehehe...
-            </Typography>
-          </Box>
-          <Box pt={2}>
-            <Typography color="#add4d2" fontSize={11}>
-              1:02 Pm
-            </Typography>
-          </Box>
-        </Stack>
-        <Stack direction="row">
-          <CardContent>
-            <StyledBadge
-              overlap="circular"
-              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-              variant="dot"
-            >
-              <Avatar
-                alt="Remy Sharp"
-                src="https://www.google.com/url?sa=i&url=https%3A%2F%2Funsplash.com%2Fs%2Fphotos%2Fuser&psig=AOvVaw0IwMnn2RIVUejhe-NG2jMr&ust=1690543212448000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCICSgK_iroADFQAAAAAdAAAAABAR"
-              />
-            </StyledBadge>
-          </CardContent>
-          <Box pt={2} width={300} textAlign="left">
-            <Typography color="#eff2f7" fontSize={15}>
-              Erik
-            </Typography>
-            <Typography color="#add4d2" fontSize={14}>
-              Hehehehehehehehe...
-            </Typography>
-          </Box>
-          <Box pt={2}>
-            <Typography color="#add4d2" fontSize={11}>
-              1:02 Pm
-            </Typography>
-          </Box>
-        </Stack>
-        <Stack direction="row">
-          <CardContent>
-            <StyledBadge
-              overlap="circular"
-              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-              variant="dot"
-            >
-              <Avatar
-                alt="Remy Sharp"
-                src="https://www.google.com/url?sa=i&url=https%3A%2F%2Funsplash.com%2Fs%2Fphotos%2Fuser&psig=AOvVaw0IwMnn2RIVUejhe-NG2jMr&ust=1690543212448000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCICSgK_iroADFQAAAAAdAAAAABAR"
-              />
-            </StyledBadge>
-          </CardContent>
-          <Box pt={2} width={300} textAlign="left">
-            <Typography color="#eff2f7" fontSize={15}>
-              Erik
-            </Typography>
-            <Typography color="#add4d2" fontSize={14}>
-              Hehehehehehehehe...
-            </Typography>
-          </Box>
-          <Box pt={2}>
-            <Typography color="#add4d2" fontSize={11}>
-              1:02 Pm
-            </Typography>
-          </Box>
-        </Stack>
-        <Stack direction="row">
-          <CardContent>
-            <StyledBadge
-              overlap="circular"
-              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-              variant="dot"
-            >
-              <Avatar
-                alt="Remy Sharp"
-                src="https://www.google.com/url?sa=i&url=https%3A%2F%2Funsplash.com%2Fs%2Fphotos%2Fuser&psig=AOvVaw0IwMnn2RIVUejhe-NG2jMr&ust=1690543212448000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCICSgK_iroADFQAAAAAdAAAAABAR"
-              />
-            </StyledBadge>
-          </CardContent>
-          <Box pt={2} width={300} textAlign="left">
-            <Typography color="#eff2f7" fontSize={15}>
-              Erik
-            </Typography>
-            <Typography color="#add4d2" fontSize={14}>
-              Hehehehehehehehe...
-            </Typography>
-          </Box>
-          <Box pt={2}>
-            <Typography color="#add4d2" fontSize={11}>
-              1:02 Pm
-            </Typography>
-          </Box>
-        </Stack>
-        <Stack direction="row">
-          <CardContent>
-            <StyledBadge
-              overlap="circular"
-              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-              variant="dot"
-            >
-              <Avatar
-                alt="Remy Sharp"
-                src="https://www.google.com/url?sa=i&url=https%3A%2F%2Funsplash.com%2Fs%2Fphotos%2Fuser&psig=AOvVaw0IwMnn2RIVUejhe-NG2jMr&ust=1690543212448000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCICSgK_iroADFQAAAAAdAAAAABAR"
-              />
-            </StyledBadge>
-          </CardContent>
-          <Box pt={2} width={300} textAlign="left">
-            <Typography color="#eff2f7" fontSize={15}>
-              Erik
-            </Typography>
-            <Typography color="#add4d2" fontSize={14}>
-              Hehehehehehehehe...
-            </Typography>
-          </Box>
-          <Box pt={2}>
-            <Typography color="#add4d2" fontSize={11}>
-              1:02 Pm
-            </Typography>
-          </Box>
-        </Stack>
-        <Stack direction="row">
-          <CardContent>
-            <StyledBadge
-              overlap="circular"
-              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-              variant="dot"
-            >
-              <Avatar
-                alt="Remy Sharp"
-                src="https://www.google.com/url?sa=i&url=https%3A%2F%2Funsplash.com%2Fs%2Fphotos%2Fuser&psig=AOvVaw0IwMnn2RIVUejhe-NG2jMr&ust=1690543212448000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCICSgK_iroADFQAAAAAdAAAAABAR"
-              />
-            </StyledBadge>
-          </CardContent>
-          <Box pt={2} width={300} textAlign="left">
-            <Typography color="#eff2f7" fontSize={15}>
-              Erik
-            </Typography>
-            <Typography color="#add4d2" fontSize={14}>
-              Hehehehehehehehe...
-            </Typography>
-          </Box>
-          <Box pt={2}>
-            <Typography color="#add4d2" fontSize={11}>
-              1:02 Pm
-            </Typography>
-          </Box>
-        </Stack>
+      <Box
+        maxHeight="50vh"
+        height="100vh"
+        px={3}
+        overflow="auto"
+        className="container"
+      >
+        {users.map((user) => {
+          return (
+            <Button onClick={() => handleShowMessage(user)} variant="text">
+              <Stack direction="row">
+                <CardContent>
+                  <StyledBadge
+                    overlap="circular"
+                    anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                    variant="dot"
+                  >
+                    <Avatar
+                      alt="Remy Sharp"
+                      src="https://www.google.com/url?sa=i&url=https%3A%2F%2Funsplash.com%2Fs%2Fphotos%2Fuser&psig=AOvVaw0IwMnn2RIVUejhe-NG2jMr&ust=1690543212448000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCICSgK_iroADFQAAAAAdAAAAABAR"
+                    />
+                  </StyledBadge>
+                </CardContent>
+                <Box pt={2} width={300} textAlign="left">
+                  <Typography
+                    color="#eff2f7"
+                    fontSize={15}
+                    textTransform="none"
+                  >
+                    {user.name}
+                  </Typography>
+                  <Typography
+                    color="#add4d2"
+                    fontSize={14}
+                    textTransform="none"
+                  >
+                    Hehehehehehehehe...
+                  </Typography>
+                </Box>
+                <Box pt={2}>
+                  <Typography color="#add4d2" fontSize={11}>
+                    1:02 Pm
+                  </Typography>
+                </Box>
+              </Stack>
+            </Button>
+          );
+        })}
       </Box>
     </Stack>
   );

@@ -10,11 +10,21 @@ import Auth from "../../Services/Auth";
 import { useNavigate } from "react-router-dom";
 import { Chat, Group, Person, Settings, WbSunny } from "@mui/icons-material";
 import { NotificationMessageContext } from "./NotificationProvider";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { FeatureContext } from "./FeatureProvider";
+import Pusher from "pusher-js";
 
-export default function NavBar() {
+/**
+ * interface Notification
+ * @param {number} from_user_id
+ * @param {string} body
+ */
+export interface NotiMessage {
+  from_user_id: number;
+  body: string;
+}
 
+const NavBar = () => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const isMenuOpen = Boolean(anchorEl);
 
@@ -29,10 +39,39 @@ export default function NavBar() {
     setAnchorEl(null);
   };
   // use context
-  const { theNuNotification, updateNumber } = useContext(
+  const { theNuNotification, updateNumber, updateNotifications } = useContext(
     NotificationMessageContext
   );
   const { change } = useContext(FeatureContext);
+
+  // use Pusher
+  var pusher = new Pusher("96e68ac1a93c911b481f", {
+    cluster: "ap1",
+  });
+
+  // connect to pusher event 'chat'
+  var channel = pusher.subscribe(
+    "Notification-User-" + JSON.parse(localStorage.getItem("user") as string).id
+  );
+  var i = 0;
+  const handleNewNotification = (data: NotiMessage) => {
+    console.log(data);
+    if (
+      data.from_user_id !==
+      JSON.parse(localStorage.getItem("user") as string).id
+    ) {
+      i++;
+    }
+    updateNumber(i);
+    updateNotifications(data);
+  };
+
+  useEffect(() => {
+    channel.bind("notification", handleNewNotification);
+    return () => {
+      channel.unbind("notification", handleNewNotification);
+    };
+  }, [channel]);
 
   // handle logout
   const handleLogout = () => {
@@ -129,4 +168,5 @@ export default function NavBar() {
       {renderMenu}
     </Box>
   );
-}
+};
+export default NavBar;

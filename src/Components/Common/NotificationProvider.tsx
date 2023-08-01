@@ -1,26 +1,25 @@
 import { FC, ReactNode, createContext, useState } from "react";
-import { Message } from "./Messenger";
-
+import {NotiMessage} from "./Navbar";
 /**
  * interface fot CommonContext
  * @property {number} theNuNotification
- * @property {Message[]} messages
+ * @property {NotiMessage[]} notifications
  * @property {void} updateNumber
- * @property {void} updateMessages
+ * @property {void} updateNotifications
  */
 interface CommonContext {
   theNuNotification: number;
-  messages: Message[];
+  notifications: NotiMessage[]; // notifications
   updateNumber: (theNuNotification: number) => void;
-  updateMessages: (message: Message) => void;
+  updateNotifications: (notification: NotiMessage) => void;
 }
 
 // default value
 const defaulValues = {
   theNuNotification: 0,
-  messages: [],
+  notifications: [],
   updateNumber: () => {},
-  updateMessages: () => {},
+  updateNotifications: () => {},
 };
 
 // export NotificationMessageContext
@@ -35,21 +34,21 @@ const NotificationMessageProvider: FC<{ children: ReactNode }> = ({
     defaulValues.theNuNotification
   );
 
-  // state for messages
-  const [messages, setMessages] = useState<Message[]>([]);
+  // state for notifications
+  const [notifications, setNotifications] = useState<NotiMessage[]>([]);
 
   // fucntion upadateNumber
   const updateNumber = (theNuNotification: number) =>
     setTheNumberNotification(theNuNotification);
 
-  // function updateMessages
-  const updateMessages = (data: Message) =>
-    setMessages((prevMessages: any) => [...prevMessages, data]);
+  // function updateNotifications
+  const updateNotifications = (data: NotiMessage) =>
+    setNotifications((prevnotifications: any) => [...prevnotifications, data]);
   const notificationDynamic = {
     theNuNotification,
-    messages,
+    notifications,
     updateNumber,
-    updateMessages,
+    updateNotifications,
   };
 
   return (

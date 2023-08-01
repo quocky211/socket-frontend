@@ -1,4 +1,4 @@
-import React from "react";
+import React, { FC, useContext } from "react";
 import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import MenuItem from "@mui/material/MenuItem";
@@ -10,6 +10,7 @@ import {
   VideoCameraFrontOutlined,
 } from "@mui/icons-material";
 import { Avatar, Divider, Typography } from "@mui/material";
+import { ChatWithUserContext } from "./ChatWithUserProvider";
 
 const TopBarChat = () => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -45,6 +46,10 @@ const TopBarChat = () => {
       <MenuItem onClick={handleMenuClose}>Logout</MenuItem>
     </Menu>
   );
+
+  // use context
+  const { to_username } = useContext(ChatWithUserContext);
+
   return (
     <>
       <Box
@@ -60,7 +65,7 @@ const TopBarChat = () => {
             src="https://www.google.com/url?sa=i&url=https%3A%2F%2Funsplash.com%2Fs%2Fphotos%2Fuser&psig=AOvVaw0IwMnn2RIVUejhe-NG2jMr&ust=1690543212448000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCICSgK_iroADFQAAAAAdAAAAABAR"
           />
           <Typography ml={3} fontSize={16} color="#eff2f7" lineHeight={3}>
-            {JSON.parse(localStorage.getItem("user") as string).name}
+            {to_username}
           </Typography>
         </Box>
         <Box>
