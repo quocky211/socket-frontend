@@ -130,7 +130,7 @@ const NavBar = () => {
           sx={{ my: 1 }}
           onClick={() => handleNotification("chat")}
         >
-          <Chat fontSize="large" />
+          <Chat fontSize="large" sx={{ color: "#abb4d2" }} />
         </IconButton>
         <IconButton
           size="large"
@@ -139,22 +139,21 @@ const NavBar = () => {
           onClick={() => handleNotification("notification")}
         >
           <Badge badgeContent={theNuNotification} color="error">
-            <NotificationsIcon fontSize="large" />
+            <NotificationsIcon fontSize="large" sx={{ color: "#abb4d2" }} />
           </Badge>
         </IconButton>
         <IconButton size="large" color="inherit" sx={{ my: 1 }}>
-          <Group fontSize="large" />
+          <Group fontSize="large" sx={{ color: "#abb4d2" }} />
         </IconButton>
         <IconButton size="large" color="inherit" sx={{ my: 1 }}>
-          <Person fontSize="large" />
+          <Person fontSize="large" sx={{ color: "#abb4d2" }} />
         </IconButton>
         <IconButton size="large" color="inherit" sx={{ my: 1 }}>
-          <WbSunny fontSize="large" />
+          <WbSunny fontSize="large" sx={{ color: "#abb4d2" }} />
         </IconButton>
         <IconButton size="large" color="inherit" sx={{ my: 1 }}>
-          <Settings fontSize="large" />
+          <Settings fontSize="large" sx={{ color: "#abb4d2" }} />
         </IconButton>
-
         <IconButton
           size="large"
           aria-controls={menuId}
@@ -162,7 +161,7 @@ const NavBar = () => {
           onClick={handleProfileMenuOpen}
           color="inherit"
         >
-          <AccountCircle fontSize="large" />
+          <AccountCircle fontSize="large" sx={{ color: "#abb4d2" }} />
         </IconButton>
       </Box>
       {renderMenu}
