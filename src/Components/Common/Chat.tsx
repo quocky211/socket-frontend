@@ -9,14 +9,15 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import React, { useContext, useEffect, useState } from "react";
+import React, { FC, useContext, useEffect, useState } from "react";
 import { styled, alpha } from "@mui/material/styles";
 import SearchIcon from "@mui/icons-material/Search";
-import "./common.css";
+import "../css/common.css";
 import ApiUser from "../../Services/User";
 import { ChatWithUserContext } from "./ChatWithUserProvider";
-import Message from "../../Services/Message";
-
+import ApiMessage from "../../Services/Message";
+import { Message } from "./Messenger";
+import { ToUser } from "./ChatWithUserProvider";
 // style for search
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -94,49 +95,68 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
   },
 }));
 
-interface User {
-  id: number;
-  name: string;
+interface UserDisplay extends ToUser {
+  lastMessage: string;
 }
 
-const Chat = () => {
+const Chat: FC<{
+  pusherMessages: Message[];
+  setPusherMessages: (pusherMessage: Message[]) => void;
+  setIsLoading: (isLoading: boolean) => void;
+}> = ({ pusherMessages, setPusherMessages, setIsLoading }) => {
   // state for users
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<UserDisplay[]>([]);
 
   // handle show message with user
-
   const { changeUser, updateMessages, updateConversationId } =
     useContext(ChatWithUserContext);
 
-  // call api get users
-  useEffect(() => {
-    getListFriends();
-  }, []);
-
   // handle get list users
-  const getListFriends = () => {
+  const getListFriends = (firstTime: boolean) => {
     ApiUser.getAllUsers()
       .then((res) => {
-        setUsers(res.data);
-        // default value when open browser
-        changeUser(res.data[0].id, res.data[0].name);
-        Message.getMessagesWithUser(res.data[0].id).then((res1) => {
-          updateMessages(res1.data);
-        });
-        Message.getConversatiion(res.data[0].id).then((res1) => {
-          updateConversationId(res1.data);
-        });
+        const userList = res.data.map((user: any)=>{
+          return{
+            toUserId : user.id,
+            toUserName: user.name,
+            toUserAvatar: user.avatar,
+            lastMessage: user.lastMessage,
+          }
+        })
+        setUsers(userList);
+        if (firstTime) {
+          // default value when open browser
+          const toUser = {
+            toUserId : res.data[0].id,
+            toUserName: res.data[0].name,
+            toUserAvatar: res.data[0].avatar,
+          }
+          changeUser(toUser);
+          ApiMessage.getMessagesWithUser(res.data[0].id).then((res1) => {
+            updateMessages(res1.data);
+          });
+          ApiMessage.getConversatiion(res.data[0].id).then((res1) => {
+            updateConversationId(res1.data);
+          });
+          setFirstTime(false);
+        }
       })
       .catch((err) => {
         console.log(err);
       });
   };
+  // call api get users
+  const [firstTime, setFirstTime] = useState(true);
+  useEffect(() => {
+    getListFriends(firstTime);
+  }, [pusherMessages]);
 
   // handle click change user conversation
-  const handleShowMessage = (user: User) => {
-    changeUser(user.id, user.name);
+  const handleShowMessage = (user: UserDisplay) => {
+    setIsLoading(true);
+    changeUser(user);
     // api get all messages with a user
-    Message.getMessagesWithUser(user.id)
+    ApiMessage.getMessagesWithUser(user.toUserId)
       .then((res) => {
         updateMessages(res.data);
       })
@@ -145,14 +165,18 @@ const Chat = () => {
       });
 
     // api get conversation id
-    Message.getConversatiion(user.id)
+    ApiMessage.getConversatiion(user.toUserId)
       .then((res) => {
         updateConversationId(res.data);
       })
       .catch((err) => {
         console.log(err);
       });
+    setIsLoading(false);
+    // message from pusher will be empty
+    setPusherMessages([]);
   };
+
   return (
     <Stack spacing={2} pt={2}>
       <Box display="block" textAlign="left" px={3}>
@@ -174,74 +198,24 @@ const Chat = () => {
       </Box>
       {/* friends active */}
       <Stack direction="row" spacing={2} px={3}>
-        <Card sx={{ bgcolor: "#ffffff26" }}>
-          <CardContent>
-            <StyledBadge
-              overlap="circular"
-              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-              variant="dot"
-            >
-              <Avatar
-                alt="Remy Sharp"
-                src="https://www.google.com/url?sa=i&url=https%3A%2F%2Funsplash.com%2Fs%2Fphotos%2Fuser&psig=AOvVaw0IwMnn2RIVUejhe-NG2jMr&ust=1690543212448000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCICSgK_iroADFQAAAAAdAAAAABAR"
-              />
-            </StyledBadge>
-            <Typography color="#eff2f7" fontSize={13}>
-              Erik
-            </Typography>
-          </CardContent>
-        </Card>
-        <Card sx={{ bgcolor: "#ffffff26" }}>
-          <CardContent>
-            <StyledBadge
-              overlap="circular"
-              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-              variant="dot"
-            >
-              <Avatar
-                alt="Remy Sharp"
-                src="https://www.google.com/url?sa=i&url=https%3A%2F%2Funsplash.com%2Fs%2Fphotos%2Fuser&psig=AOvVaw0IwMnn2RIVUejhe-NG2jMr&ust=1690543212448000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCICSgK_iroADFQAAAAAdAAAAABAR"
-              />
-            </StyledBadge>
-            <Typography color="#eff2f7" fontSize={13}>
-              Erik
-            </Typography>
-          </CardContent>
-        </Card>
-        <Card sx={{ bgcolor: "#ffffff26" }}>
-          <CardContent>
-            <StyledBadge
-              overlap="circular"
-              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-              variant="dot"
-            >
-              <Avatar
-                alt="Remy Sharp"
-                src="https://www.google.com/url?sa=i&url=https%3A%2F%2Funsplash.com%2Fs%2Fphotos%2Fuser&psig=AOvVaw0IwMnn2RIVUejhe-NG2jMr&ust=1690543212448000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCICSgK_iroADFQAAAAAdAAAAABAR"
-              />
-            </StyledBadge>
-            <Typography color="#eff2f7" fontSize={13}>
-              Erik
-            </Typography>
-          </CardContent>
-        </Card>
-        <Card sx={{ bgcolor: "#ffffff26" }}>
-          <CardContent>
-            <StyledBadge
-              overlap="circular"
-              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-              variant="dot"
-            >
-              <Avatar
-                alt="Remy Sharp"
-                src="https://www.google.com/url?sa=i&url=https%3A%2F%2Funsplash.com%2Fs%2Fphotos%2Fuser&psig=AOvVaw0IwMnn2RIVUejhe-NG2jMr&ust=1690543212448000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCICSgK_iroADFQAAAAAdAAAAABAR"
-              />
-            </StyledBadge>
-            <Typography color="#eff2f7" fontSize={13}>
-              Erik
-            </Typography>
-          </CardContent>
-        </Card>
+        {users.map((user, index) => {
+          return (
+            <Card sx={{ bgcolor: "#ffffff26" }}>
+              <CardContent>
+                <StyledBadge
+                  overlap="circular"
+                  anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                  variant="dot"
+                >
+                  <Avatar alt={user.toUserName} src={user.toUserAvatar} />
+                </StyledBadge>
+                <Typography color="#eff2f7" fontSize={13} sx={{ mt: 1 }}>
+                  {user.toUserName}
+                </Typography>
+              </CardContent>
+            </Card>
+          );
+        })}
       </Stack>
       <Box textAlign="left" px={3}>
         <Typography color="#eff2f7">Recent</Typography>
@@ -254,7 +228,7 @@ const Chat = () => {
         overflow="auto"
         className="container"
       >
-        {users.map((user) => {
+        {users.map((user, index) => {
           return (
             <Button onClick={() => handleShowMessage(user)} variant="text">
               <Stack direction="row">
@@ -264,10 +238,7 @@ const Chat = () => {
                     anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
                     variant="dot"
                   >
-                    <Avatar
-                      alt="Remy Sharp"
-                      src="https://www.google.com/url?sa=i&url=https%3A%2F%2Funsplash.com%2Fs%2Fphotos%2Fuser&psig=AOvVaw0IwMnn2RIVUejhe-NG2jMr&ust=1690543212448000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCICSgK_iroADFQAAAAAdAAAAABAR"
-                    />
+                    <Avatar alt={user.toUserName} src={user.toUserAvatar} />
                   </StyledBadge>
                 </CardContent>
                 <Box pt={2} width={300} textAlign="left">
@@ -276,14 +247,14 @@ const Chat = () => {
                     fontSize={15}
                     textTransform="none"
                   >
-                    {user.name}
+                    {user.toUserName}
                   </Typography>
                   <Typography
                     color="#add4d2"
                     fontSize={14}
                     textTransform="none"
                   >
-                    Hehehehehehehehe...
+                    {user.lastMessage}
                   </Typography>
                 </Box>
                 <Box pt={2}>

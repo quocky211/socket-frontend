@@ -2,11 +2,11 @@ import React, { useContext } from "react";
 import { NotificationMessageContext } from "./NotificationProvider";
 import { Avatar, Box, Stack, Typography } from "@mui/material";
 import { NotiMessage } from "./Navbar";
-import './common.css';
+import "../css/common.css";
 const Notification = () => {
   // get state from use context
   const { notifications } = useContext(NotificationMessageContext);
-
+  
   return (
     <Box p={3}>
       <Box display="block" textAlign="left">
@@ -15,10 +15,12 @@ const Notification = () => {
         </Typography>
       </Box>
       {/* get notifications */}
-      <Box maxHeight="80vh"
+      <Box
+        maxHeight="80vh"
         height="100vh"
         overflow="auto"
-        className="container">
+        className="container"
+      >
         {notifications.map((notification: NotiMessage) => {
           const isCurrentUser =
             notification.from_user_id ===

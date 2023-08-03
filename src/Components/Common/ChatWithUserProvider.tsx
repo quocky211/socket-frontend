@@ -11,20 +11,28 @@ import { Message } from "./Messenger";
  * @function updateMessages()
  * @fucntion updateConversationId()
  */
+
+export interface ToUser{
+  toUserId: number,
+  toUserName: string,
+  toUserAvatar: string,
+}
 interface CommonContext {
-  to_user: number;
-  to_username: string;
+  toUser: ToUser;
   conversationId: number;
   messages: Message[];
-  changeUser: (to_user: number, to_username: string) => void;
+  changeUser: (toUser: ToUser) => void;
   updateMessages: (message: Message[]) => void;
   updateConversationId: (conversationId: number) => void;
 }
 
 // default value
 const defaultValues = {
-  to_user: 0,
-  to_username: "",
+  toUser: {
+    toUserId: 0,
+    toUserName: "",
+    toUserAvatar: "",
+  },
   conversationId: 0,
   messages: [],
   changeUser: () => {},
@@ -36,10 +44,7 @@ export const ChatWithUserContext = createContext<CommonContext>(defaultValues);
 
 const ChatWithUserProvider: FC<{ children: ReactNode }> = ({ children }) => {
   // state for to_user
-  const [to_user, setToUser] = useState(defaultValues.to_user);
-
-  // state for to_username
-  const [to_username, setToUsername] = useState(defaultValues.to_username);
+  const [toUser, setToUser] = useState<ToUser>(defaultValues.toUser);
 
   // state for conversationId
   const [conversationId, setConversationId] = useState(
@@ -48,11 +53,10 @@ const ChatWithUserProvider: FC<{ children: ReactNode }> = ({ children }) => {
 
   //state for messages
   const [messages, setMessages] = useState<Message[]>(defaultValues.messages);
-
+  // state for index Avatar
   // function change User
-  const changeUser = (to_user: number, to_username: string) => {
-    setToUser(to_user);
-    setToUsername(to_username);
+  const changeUser = (toUser: ToUser) => {
+    setToUser(toUser)
   };
 
   // function update message
@@ -67,8 +71,7 @@ const ChatWithUserProvider: FC<{ children: ReactNode }> = ({ children }) => {
 
   // dynamic value for use context
   const dynamicValues = {
-    to_user,
-    to_username,
+    toUser,
     conversationId,
     messages,
     changeUser,

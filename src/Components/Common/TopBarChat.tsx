@@ -1,4 +1,4 @@
-import React, { FC, useContext } from "react";
+import React, { useContext } from "react";
 import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import MenuItem from "@mui/material/MenuItem";
@@ -9,8 +9,39 @@ import {
   Search,
   VideoCameraFrontOutlined,
 } from "@mui/icons-material";
-import { Avatar, Divider, Typography } from "@mui/material";
+import { Avatar, Badge, Divider, Typography } from "@mui/material";
 import { ChatWithUserContext } from "./ChatWithUserProvider";
+import { styled } from "@mui/material/styles";
+
+const StyledBadge = styled(Badge)(({ theme }) => ({
+  "& .MuiBadge-badge": {
+    backgroundColor: "#44b700",
+    color: "#44b700",
+    bottom:"32%",
+    boxShadow: `0 0 0 2px ${theme.palette.background.paper}`,
+    "&::after": {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "100%",
+      borderRadius: "50%",
+      animation: "ripple 1.2s infinite ease-in-out",
+      border: "1px solid currentColor",
+      content: '""',
+    },
+  },
+  "@keyframes ripple": {
+    "0%": {
+      transform: "scale(.8)",
+      opacity: 1,
+    },
+    "100%": {
+      transform: "scale(2.4)",
+      opacity: 0,
+    },
+  },
+}));
 
 const TopBarChat = () => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -48,7 +79,7 @@ const TopBarChat = () => {
   );
 
   // use context
-  const { to_username } = useContext(ChatWithUserContext);
+  const { toUser } = useContext(ChatWithUserContext);
 
   return (
     <>
@@ -60,12 +91,18 @@ const TopBarChat = () => {
         px={3}
       >
         <Box display="flex">
+        <StyledBadge
+                  overlap="circular"
+                  anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                  variant="dot"
+                >
           <Avatar
-            alt="Remy Sharp"
-            src="https://www.google.com/url?sa=i&url=https%3A%2F%2Funsplash.com%2Fs%2Fphotos%2Fuser&psig=AOvVaw0IwMnn2RIVUejhe-NG2jMr&ust=1690543212448000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCICSgK_iroADFQAAAAAdAAAAABAR"
-          />
+            alt={toUser.toUserName}
+            src={toUser.toUserAvatar}
+            />
+            </StyledBadge>
           <Typography ml={3} fontSize={16} color="#eff2f7" lineHeight={3}>
-            {to_username}
+            {toUser.toUserName}
           </Typography>
         </Box>
         <Box>

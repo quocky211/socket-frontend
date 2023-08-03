@@ -4,13 +4,13 @@ import {
   Send,
   SentimentSatisfiedOutlined,
 } from "@mui/icons-material";
-import React, { useContext, useEffect, useState } from "react";
-import "./common.css";
-import Pusher from "pusher-js";
+import React, { FC, useContext, useEffect, useState } from "react";
+import "../css/common.css";
 import {
   Box,
   Button,
   Chip,
+  CircularProgress,
   Divider,
   IconButton,
   TextField,
@@ -24,6 +24,7 @@ import { useRef } from "react";
  * interface for Message
  * @property {number} to_user_id
  * @property {string} message
+ * @property {string} image
  */
 export interface Message {
   to_user_id: number;
@@ -31,13 +32,14 @@ export interface Message {
   image: string;
 }
 
-const Messenger = () => {
+const Messenger: FC<{ pusherMessages: Message[]; isLoading?: boolean }> = ({
+  pusherMessages,
+  isLoading,
+}) => {
   // state for input message
   const [textInput, setTextInput] = useState("");
   // state for input file
   const [file, setFile] = useState<File | null>(null);
-  // state for messages
-  const [allMessages, setAllMessages] = useState<Message[]>([]);
   // screen messenger
   const containerRef = useRef<HTMLDivElement>(null);
   function scrollToBottom() {
@@ -48,32 +50,11 @@ const Messenger = () => {
   }
 
   // use context to get to_user_id
-  const { to_user, to_username, messages, conversationId } =
-    useContext(ChatWithUserContext);
+  const { toUser, messages } = useContext(ChatWithUserContext);
   // use to scroll to bottom
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-  // use Pusher
-  var pusher = new Pusher("96e68ac1a93c911b481f", {
-    cluster: "ap1",
-  });
-
-  // connect to pusher event 'chat'
-  var channel = pusher.subscribe("Chat-Conversation-" + conversationId);
-
-  // function handle messages
-  const handleNewMessage = (data: Message) => {
-    setAllMessages((prevMessages: any) => [...prevMessages, data]);
-  };
-
-  // get messages from pusher
-  useEffect(() => {
-    channel.bind("message", handleNewMessage);
-    return () => {
-      channel.unbind("message", handleNewMessage);
-    };
-  }, [channel]);
 
   // ref for input type file
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -85,6 +66,7 @@ const Messenger = () => {
   const handleFileChange = () => {
     const selectedFile = fileInputRef.current?.files?.[0];
     if (selectedFile) {
+      console.log(selectedFile);
       setFile(selectedFile);
     }
   };
@@ -93,6 +75,7 @@ const Messenger = () => {
   const handleImageButtonClick = () => {
     imageInputRef.current?.click();
   };
+
   const handleImageChange = () => {
     const selectedImage = imageInputRef.current?.files?.[0];
     if (selectedImage) {
@@ -106,7 +89,7 @@ const Messenger = () => {
   const handleSendMessage = () => {
     // get username from localstorage
     const data = {
-      to_user_id: to_user,
+      to_user_id: toUser.toUserId,
       message: textInput,
       image: file,
     };
@@ -130,6 +113,14 @@ const Messenger = () => {
         ref={containerRef}
         sx={{ overflowY: "auto" }}
       >
+        {isLoading ? (
+          <CircularProgress
+            color="inherit"
+            sx={{ position: "absolute", top: 250 }}
+          />
+        ) : (
+          <></>
+        )}
         {/* display message from DB*/}
         {messages.map((message, index) => {
           // check message: message from the current user will have bg: #303841 and the others: #7269ef
@@ -152,17 +143,19 @@ const Messenger = () => {
                 {message.message}
               </Typography>
               {message.image ? (
-                <img
-                  src={message.image}
-                  alt="hinh anh"
-                  style={{
-                    width: "150px",
-                    height: "100px",
-                    objectFit: "fill",
-                    borderRadius: 4,
-                    borderColor: "black",
-                  }}
-                />
+                <a href={message.image}>
+                  <img
+                    src={message.image}
+                    alt="Download file"
+                    style={{
+                      width: "150px",
+                      height: "100px",
+                      objectFit: "fill",
+                      borderRadius: 4,
+                      borderColor: "black",
+                    }}
+                  />
+                </a>
               ) : (
                 <></>
               )}
@@ -185,22 +178,24 @@ const Messenger = () => {
               justifyContent="space-between"
             >
               <Chip
-                label={to_username}
+                label={toUser.toUserName}
                 color="primary"
                 sx={{ color: "#eff2f7" }}
               />
               {message.image ? (
-                <img
-                  src={message.image}
-                  alt="hinh anh"
-                  style={{
-                    width: "150px",
-                    height: "100px",
-                    objectFit: "fill",
-                    borderRadius: 4,
-                    borderColor: "black",
-                  }}
-                />
+                <a href={message.image}>
+                  <img
+                    src={message.image}
+                    alt="Download file"
+                    style={{
+                      width: "150px",
+                      height: "100px",
+                      objectFit: "fill",
+                      borderRadius: 4,
+                      borderColor: "black",
+                    }}
+                  />
+                </a>
               ) : (
                 <></>
               )}
@@ -213,7 +208,7 @@ const Messenger = () => {
           return messageBox;
         })}
         {/* display message realtime */}
-        {allMessages.map((message, index) => {
+        {pusherMessages.map((message, index) => {
           // check message: message from the current user will have bg: #303841 and the others: #7269ef
           const isCurrentUser =
             message.to_user_id !=
@@ -234,17 +229,19 @@ const Messenger = () => {
                 {message.message}
               </Typography>
               {message.image ? (
-                <img
-                  src={message.image}
-                  alt="hinh anh"
-                  style={{
-                    width: "150px",
-                    height: "100px",
-                    objectFit: "fill",
-                    borderRadius: 4,
-                    borderColor: "black",
-                  }}
-                />
+                <a href={message.image}>
+                  <img
+                    src={message.image}
+                    alt="Download file"
+                    style={{
+                      width: "150px",
+                      height: "100px",
+                      objectFit: "fill",
+                      borderRadius: 4,
+                      borderColor: "black",
+                    }}
+                  />
+                </a>
               ) : (
                 <></>
               )}
@@ -267,22 +264,24 @@ const Messenger = () => {
               justifyContent="space-between"
             >
               <Chip
-                label={to_username}
+                label={toUser.toUserName}
                 color="primary"
                 sx={{ color: "#eff2f7" }}
               />
               {message.image ? (
-                <img
-                  src={message.image}
-                  alt="hinh anh"
-                  style={{
-                    width: "150px",
-                    height: "100px",
-                    objectFit: "fill",
-                    borderRadius: 4,
-                    borderColor: "black",
-                  }}
-                />
+                <a href={message.image}>
+                  <img
+                    src={message.image}
+                    alt="Download file"
+                    style={{
+                      width: "150px",
+                      height: "100px",
+                      objectFit: "fill",
+                      borderRadius: 4,
+                      borderColor: "black",
+                    }}
+                  />
+                </a>
               ) : (
                 <></>
               )}
@@ -291,7 +290,6 @@ const Messenger = () => {
               </Typography>
             </Box>
           );
-
           return messageBox;
         })}
       </Box>
@@ -299,7 +297,6 @@ const Messenger = () => {
 
       {/* Footer of screen */}
       <Box display="flex" p={2}>
-        {/* <form encType="multipart/form-data" style={{ display: "contents" }}> */}
         <TextField
           fullWidth
           placeholder="Enter message"
@@ -351,7 +348,6 @@ const Messenger = () => {
             <Send sx={{ color: "white" }} />
           </IconButton>
         </Button>
-        {/* </form> */}
       </Box>
     </>
   );

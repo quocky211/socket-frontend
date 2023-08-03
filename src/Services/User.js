@@ -21,10 +21,17 @@ class ApiUser{
     async updateUser(data, id){
         return await axios.put(`http://localhost:8000/api/user/${id}`, data)
     }
-
-    //api delete user
-    async deleteUser(id){
+     //api delete user
+     async deleteUser(id){
         return await axios.delete(`http://localhost:8000/api/user/${id}`)
+    }
+     //api update avatar
+     async updateAvatar( data, id ){
+        return await axios.post(`http://localhost:8000/api/avatar/${id}`, data, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          });
     }
 
 }

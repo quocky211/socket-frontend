@@ -8,7 +8,14 @@ import AccountCircle from "@mui/icons-material/AccountCircle";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import Auth from "../../Services/Auth";
 import { useNavigate } from "react-router-dom";
-import { Chat, Group, Person, Settings, WbSunny } from "@mui/icons-material";
+import {
+  Chat,
+  Group,
+  Logout,
+  Person,
+  Settings,
+  WbSunny,
+} from "@mui/icons-material";
 import { NotificationMessageContext } from "./NotificationProvider";
 import { useContext, useEffect } from "react";
 import { FeatureContext } from "./FeatureProvider";
@@ -25,19 +32,9 @@ export interface NotiMessage {
 }
 
 const NavBar = () => {
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const isMenuOpen = Boolean(anchorEl);
 
   const navigate = useNavigate();
 
-  const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  // handle menu close
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
   // use context
   const { theNuNotification, updateNumber, updateNotifications } = useContext(
     NotificationMessageContext
@@ -89,33 +86,7 @@ const NavBar = () => {
         console.log(err);
       });
 
-    handleMenuClose();
   };
-
-  const menuId = "primary-search-account-menu";
-
-  // Menu of account
-  const renderMenu = (
-    <Menu
-      anchorEl={anchorEl}
-      anchorOrigin={{
-        vertical: "top",
-        horizontal: "right",
-      }}
-      id={menuId}
-      keepMounted
-      transformOrigin={{
-        vertical: "top",
-        horizontal: "right",
-      }}
-      open={isMenuOpen}
-      onClose={handleMenuClose}
-    >
-      <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
-      <MenuItem onClick={handleMenuClose}>My account</MenuItem>
-      <MenuItem onClick={handleLogout}>Logout</MenuItem>
-    </Menu>
-  );
 
   const handleNotification = (feature: string) => {
     change(feature);
@@ -132,6 +103,9 @@ const NavBar = () => {
         >
           <Chat fontSize="large" sx={{ color: "#abb4d2" }} />
         </IconButton>
+        <IconButton size="large" color="inherit" sx={{ my: 1 }}>
+          <Group fontSize="large" sx={{ color: "#abb4d2" }} />
+        </IconButton>
         <IconButton
           size="large"
           color="inherit"
@@ -142,29 +116,28 @@ const NavBar = () => {
             <NotificationsIcon fontSize="large" sx={{ color: "#abb4d2" }} />
           </Badge>
         </IconButton>
-        <IconButton size="large" color="inherit" sx={{ my: 1 }}>
-          <Group fontSize="large" sx={{ color: "#abb4d2" }} />
-        </IconButton>
-        <IconButton size="large" color="inherit" sx={{ my: 1 }}>
-          <Person fontSize="large" sx={{ color: "#abb4d2" }} />
+        <IconButton
+          size="large"
+          color="inherit"
+          sx={{ my: 1 }}
+          onClick={() => handleNotification("setting")}
+        >
+          <Settings fontSize="large" sx={{ color: "#abb4d2" }} />
         </IconButton>
         <IconButton size="large" color="inherit" sx={{ my: 1 }}>
           <WbSunny fontSize="large" sx={{ color: "#abb4d2" }} />
         </IconButton>
-        <IconButton size="large" color="inherit" sx={{ my: 1 }}>
-          <Settings fontSize="large" sx={{ color: "#abb4d2" }} />
-        </IconButton>
         <IconButton
           size="large"
-          aria-controls={menuId}
-          aria-haspopup="true"
-          onClick={handleProfileMenuOpen}
           color="inherit"
+          onClick={() => handleNotification("setting")}
         >
           <AccountCircle fontSize="large" sx={{ color: "#abb4d2" }} />
         </IconButton>
+        <IconButton size="large" color="inherit" sx={{ my: 1 }} onClick={handleLogout}>
+          <Logout fontSize="large" sx={{ color: "#abb4d2" }} />
+        </IconButton>
       </Box>
-      {renderMenu}
     </Box>
   );
 };
