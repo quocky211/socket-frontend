@@ -2,8 +2,6 @@ import * as React from "react";
 import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import Badge from "@mui/material/Badge";
-import MenuItem from "@mui/material/MenuItem";
-import Menu from "@mui/material/Menu";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import Auth from "../../Services/Auth";
@@ -12,7 +10,6 @@ import {
   Chat,
   Group,
   Logout,
-  Person,
   Settings,
   WbSunny,
 } from "@mui/icons-material";

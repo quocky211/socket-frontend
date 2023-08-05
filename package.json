@@ -6,6 +6,7 @@
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@hookform/resolvers": "^3.1.1",
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@mui/icons-material": "^5.14.1",
     "@mui/material": "^5.14.1",
     "@mui/x-data-grid": "^6.10.1",
