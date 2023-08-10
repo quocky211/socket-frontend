@@ -17,3 +17,9 @@
   background-color: transparent; /* Màu nền của thanh kéo */
   border-radius: 4px; /* Bo góc của thanh kéo */
 }
+
+.MuiList-root{
+  padding: 0 !important;
+  margin: 0 !important;
+  background-color: "#36404a" !important;
+}

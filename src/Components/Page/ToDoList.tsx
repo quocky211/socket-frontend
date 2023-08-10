@@ -46,8 +46,8 @@ interface Action {
 type TaskState = Task[];
 
 /**
- * 
- * @returns 
+ *
+ * @returns
  */
 const ToDoList = () => {
   /**
@@ -65,7 +65,7 @@ const ToDoList = () => {
         return state.map((t) => (t.id === action.task.id ? action.task : t));
       }
       case "save": {
-        return state.map((t) => (t.id === action.task.id ? action.task : t))
+        return state.map((t) => (t.id === action.task.id ? action.task : t));
       }
       case "remove": {
         return state.filter((t) => t.id !== action.task.id);
@@ -74,7 +74,10 @@ const ToDoList = () => {
         const index = state.findIndex((task) => task.id === action.task.id);
         if (index > 0) {
           const newTasks = [...state];
-          [newTasks[index - 1], newTasks[index]] = [newTasks[index], newTasks[index - 1]]
+          [newTasks[index - 1], newTasks[index]] = [
+            newTasks[index],
+            newTasks[index - 1],
+          ];
           return newTasks;
         }
         return state;
@@ -118,7 +121,7 @@ const ToDoList = () => {
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setPriority((event.target as HTMLInputElement).value);
   };
-  // 
+  //
   const handleAddTask = () => {
     if (newTaskText.trim() === "") return;
 
@@ -167,8 +170,8 @@ const ToDoList = () => {
   return (
     <Box
       sx={{ my: 3, display: "flex", height: "100%", justifyContent: "center" }}
-    > 
-    <Link to="/">Back</Link>
+    >
+      <Link to="/">Back</Link>
       <List
         sx={{
           width: "100%",

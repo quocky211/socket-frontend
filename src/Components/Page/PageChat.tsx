@@ -34,7 +34,7 @@ const PageChat = () => {
     };
   }, [channel]);
   return (
-    <Box display="grid" gridTemplateColumns="0.5fr 2fr 3fr" height="100%">
+    <Box display="grid" gridTemplateColumns="0.4fr 1.4fr 3fr" height="100%">
       <Box bgcolor="#36404a">
         <NavBar />
       </Box>
@@ -44,7 +44,7 @@ const PageChat = () => {
         {feature === "setting" && <SettingAccount/>}
       </Box>
       <Box width="100%" height="100vh" bgcolor="#262e35">
-        <TopBarChat />
+        <TopBarChat setPusherMessages={setPusherMessages}/>
         <Messenger pusherMessages={pusherMessages} isLoading={isLoading}/>
       </Box>
     </Box>
