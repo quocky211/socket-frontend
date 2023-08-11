@@ -49,7 +49,6 @@ const NavBar = () => {
   );
   var i = 0;
   const handleNewNotification = (data: NotiMessage) => {
-    console.log(data);
     if (
       data.from_user_id !==
       JSON.parse(localStorage.getItem("user") as string).id

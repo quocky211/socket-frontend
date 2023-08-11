@@ -12,11 +12,22 @@ class Message {
       },
     });
   }
+
   async getConversatiion(id) {
     return await axios.get(`http://localhost:8000/api/conversationId/${id}`);
   }
+
+
   async deleteConversation(userId) {
-    return await axios.delete(`http://localhost:8000/api/message/${userId}`);
+    return await axios.delete(
+      `http://localhost:8000/api/delete/conversation/${userId}`
+    );
+  }
+
+  async deleteMessage(id) {
+    return await axios.delete(
+      `http://localhost:8000/api/message/${id}`
+    );
   }
 }
 

@@ -21,7 +21,6 @@ const PageChat = () => {
   });
   // connect to pusher event 'chat'
   var channel = pusher.subscribe("Chat-Conversation-" + conversationId);
-
   const handleNewMessage = (data: Message) => {
     // pusherMessages.push(data);
     setPusherMessages((prevMessages: any) => [...prevMessages, data]);
@@ -34,7 +33,7 @@ const PageChat = () => {
     };
   }, [channel]);
   return (
-    <Box display="grid" gridTemplateColumns="0.4fr 1.4fr 3fr" height="100%">
+    <Box display="grid" gridTemplateColumns="0.4fr 1.5fr 3fr" height="100%">
       <Box bgcolor="#36404a">
         <NavBar />
       </Box>
@@ -45,7 +44,7 @@ const PageChat = () => {
       </Box>
       <Box width="100%" height="100vh" bgcolor="#262e35">
         <TopBarChat setPusherMessages={setPusherMessages}/>
-        <Messenger pusherMessages={pusherMessages} isLoading={isLoading}/>
+        <Messenger pusherMessages={pusherMessages} isLoading={isLoading} setPusherMessages={setPusherMessages}/>
       </Box>
     </Box>
   );

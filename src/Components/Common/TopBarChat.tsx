@@ -1,4 +1,4 @@
-import React, { FC, useContext } from "react";
+import React, { FC, useContext, useState } from "react";
 import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import MenuItem from "@mui/material/MenuItem";
@@ -13,6 +13,7 @@ import {
   Avatar,
   Badge,
   Button,
+  CircularProgress,
   Divider,
   Modal,
   Typography,
@@ -72,17 +73,16 @@ const TopBarChat: FC<{
     setAnchorEl(event.currentTarget);
   };
 
+  // handle open modal  
   const [open, setOpen] = React.useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-
   // handle menu close
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
 
   // function delete conversation
-
   const handleOpenDeleteBox = () => {
     handleMenuClose();
     handleOpen();
@@ -150,13 +150,13 @@ const TopBarChat: FC<{
           </Typography>
         </Box>
         <Box>
-          <IconButton sx={{ color: "#7a7f9a", mx:1 }} >
+          <IconButton sx={{ color: "#7a7f9a", mx: 1 }}>
             <Search />
           </IconButton>
-          <IconButton sx={{ color: "#7a7f9a", mx:1 }}>
+          <IconButton sx={{ color: "#7a7f9a", mx: 1 }}>
             <CallOutlined />
           </IconButton>
-          <IconButton sx={{ color: "#7a7f9a", mx:1 }}>
+          <IconButton sx={{ color: "#7a7f9a", mx: 1 }}>
             <VideoCameraFrontOutlined />
           </IconButton>
           <IconButton
@@ -164,7 +164,7 @@ const TopBarChat: FC<{
             aria-controls={menuId}
             aria-haspopup="true"
             onClick={handleProfileMenuOpen}
-            sx={{ color: "#7a7f9a", ml:2 }}
+            sx={{ color: "#7a7f9a", ml: 2 }}
           >
             <MoreHorizOutlined />
           </IconButton>

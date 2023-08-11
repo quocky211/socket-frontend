@@ -1,10 +1,11 @@
-import { ContentCopy, DeleteOutlined, InsertLinkOutlined, InsertPhotoOutlined, MoreVert, Send, SentimentSatisfiedOutlined } from "@mui/icons-material";
+import { ContentCopy, DeleteOutlined, InsertLinkOutlined, InsertPhotoOutlined, MoreVert, Send, SentimentSatisfiedOutlined, QueryBuilderOutlined, Api } from "@mui/icons-material";
 import React, { FC, useContext, useEffect, useState } from "react";
 import "../css/common.css";
 import { Avatar, Box, Button, CircularProgress, Divider, IconButton, Menu, MenuItem, MenuList, TextField, Typography } from "@mui/material";
 import { ChatWithUserContext } from "./ChatWithUserProvider";
 import ApiMessage from "../../Services/Message";
 import { useRef } from "react";
+import Pusher from "pusher-js";
 
 /**
  * interface for Message
@@ -13,14 +14,17 @@ import { useRef } from "react";
  * @property {string} image
  */
 export interface Message {
+  id: any; // pusher convert to string
   to_user_id: number;
   message: string;
   image: string;
+  created_at: Date;
 }
 
-const Messenger: FC<{ pusherMessages: Message[]; isLoading?: boolean }> = ({
+const Messenger: FC<{ pusherMessages: Message[]; isLoading?: boolean, setPusherMessages: (pusherMessage: Message[]) => void; }> = ({
   pusherMessages,
   isLoading,
+  setPusherMessages,
 }) => {
   // state for input message
   const [textInput, setTextInput] = useState("");
@@ -28,6 +32,12 @@ const Messenger: FC<{ pusherMessages: Message[]; isLoading?: boolean }> = ({
   const [file, setFile] = useState<File | null>(null);
   // screen messenger
   const containerRef = useRef<HTMLDivElement>(null);
+  // state for copy message
+  const [copied, setCopied] = useState("");
+  // state for delete message
+  const [messageId, setMessageId] = useState(0);
+  // state for display remove message for blue chat
+  const [openRemoveChat, setOpenRemoveChat] = useState(false);
   function scrollToBottom() {
     if (containerRef.current) {
       containerRef.current.scrollTop =
@@ -38,56 +48,24 @@ const Messenger: FC<{ pusherMessages: Message[]; isLoading?: boolean }> = ({
   // open menu for each message
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const isMenuOpen = Boolean(anchorEl);
-  const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
+  const handleProfileMenuOpen = (e: any, id: number, text: string) => {
+    setMessageId(id);
+    setOpenRemoveChat(true);
+    setCopied(text);
+    setAnchorEl(e.currentTarget);
+  };
+  const handleProfileMenuOpenBlue = (e: any, text: string) => {
+    setCopied(text);
+    setOpenRemoveChat(false);
+    setAnchorEl(e.currentTarget);
   };
   // handle menu close
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
-  const menuId = "primary-search-account-menu";
-  // component menu
-  const renderMenu = (
-    <Menu
-      anchorEl={anchorEl}
-      anchorOrigin={{
-        vertical: -20,
-        horizontal: "right",
-      }}
-      id={menuId}
-      keepMounted
-      transformOrigin={{
-        vertical: 100,
-        horizontal: "right",
-      }}
-      open={isMenuOpen}
-      onClose={handleMenuClose}
-    >
-      <MenuList sx={{ bgcolor: "#36404a", borderRadius: 0 }}>
-        <MenuItem
-          sx={{ justifyContent: "space-around", width: 170, py: 2 }}
-          onClick={handleMenuClose}
-        >
-          <Typography color="#a6b0cf" fontSize={15}>
-            Copy
-          </Typography>
-          <ContentCopy sx={{ color: "#a6b0cf", fontSize: 15 }} />
-        </MenuItem>
-        <MenuItem
-          sx={{ justifyContent: "space-around", width: 170, py: 2 }}
-          onClick={handleMenuClose}
-        >
-          <Typography color="#a6b0cf" fontSize={15}>
-            Delete
-          </Typography>
-          <DeleteOutlined sx={{ color: "#a6b0cf", fontSize: 15 }} />
-        </MenuItem>
-      </MenuList>
-    </Menu>
-  );
 
   // use context to get to_user_id
-  const { toUser, messages } = useContext(ChatWithUserContext);
+  const { toUser, messages, conversationId, updateMessages } = useContext(ChatWithUserContext);
   // use to scroll to bottom
   useEffect(() => {
     scrollToBottom();
@@ -142,18 +120,143 @@ const Messenger: FC<{ pusherMessages: Message[]; isLoading?: boolean }> = ({
       });
   };
 
+  // display hour
+  const formatTime = (dateString: Date) => {
+    const options: Intl.DateTimeFormatOptions = {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    };
+    return new Date(dateString).toLocaleTimeString("en-US", options);
+  };
+
+  // copy message
+  const handleCopyClick = () => {
+    navigator.clipboard
+      .writeText(copied)
+      .then(() => {
+        handleMenuClose();
+      })
+      .catch((error) => {
+        console.error("Error copying to clipboard:", error);
+      });
+  };
+
+  // delete message
+  const handleDeleteClick = () => {
+    ApiMessage.deleteMessage(messageId)
+      .then((res) => {
+        ApiMessage.getMessagesWithUser(toUser.toUserId)
+          .then((res1) => {
+            updateMessages(res1.data);
+            setPusherMessages([]);
+            handleMenuClose();
+          })
+          .catch((err1) => {
+            console.log(err1);
+          });
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  // after delete have to use Pusher to synchronize with other chat
+  var pusher = new Pusher("96e68ac1a93c911b481f", {
+    cluster: "ap1",
+  });
+
+  var channel = pusher.subscribe("Delete-Message-" + conversationId);
+
+  const handleUpdateChat = (data: any) => {
+    console.log(data);
+    if (data) {
+      ApiMessage.getMessagesWithUser(toUser.toUserId)
+        .then((res1) => {
+          setPusherMessages([]);
+          updateMessages(res1.data);
+        })
+        .catch((err1) => {
+          console.log(err1);
+        });
+    }
+  };
+
+  useEffect(() => {
+    channel.bind("deleteMessage", handleUpdateChat);
+    return () => {
+      channel.unbind("deleteMessage", handleUpdateChat);
+    };
+  }, [channel]);
+  const menuId = "primary-search-account-menu";
+  // component menu
+  const renderMenu = (
+    <Menu
+      anchorEl={anchorEl}
+      anchorOrigin={{
+        vertical: -20,
+        horizontal: "right",
+      }}
+      id={menuId}
+      keepMounted
+      transformOrigin={{
+        vertical: 30,
+        horizontal: "right",
+      }}
+      open={isMenuOpen}
+      onClose={handleMenuClose}
+    >
+      <MenuList sx={{ bgcolor: "#36404a", borderRadius: 0 }}>
+        <MenuItem
+          sx={{ justifyContent: "space-around", width: 170, py: 2 }}
+          onClick={handleCopyClick}
+        >
+          <Typography color="#a6b0cf" fontSize={15}>
+            Copy
+          </Typography>
+          <ContentCopy sx={{ color: "#a6b0cf", fontSize: 15 }} />
+        </MenuItem>
+        {openRemoveChat ? (
+          <MenuItem
+            sx={{ justifyContent: "space-around", width: 170, py: 2 }}
+            onClick={handleDeleteClick}
+          >
+            <Typography color="#a6b0cf" fontSize={15}>
+              Remove
+            </Typography>
+            <DeleteOutlined sx={{ color: "#a6b0cf", fontSize: 15 }} />
+          </MenuItem>
+        ) : (
+          <Box></Box>
+        )}
+      </MenuList>
+    </Menu>
+  );
   return (
     <>
-      <Box maxHeight="70vh" height="100vh" px={3} className="container" ref={containerRef} sx={{ overflowY: "auto" }}>
+      <Box
+        maxHeight="70vh"
+        height="100vh"
+        px={3}
+        className="container"
+        ref={containerRef}
+        sx={{ overflowY: "auto" }}
+      >
         {isLoading ? (
-          <CircularProgress color="inherit" sx={{ position: "absolute", top: 250 }}/>
+          <CircularProgress
+            color="inherit"
+            sx={{ position: "absolute", top: 250 }}
+          />
         ) : (
           <></>
         )}
         {/* display message from DB*/}
         {messages.map((message, index) => {
           // check message: message from the current user will have bg: #303841 and the others: #7269ef
-          const isCurrentUser = message.to_user_id != JSON.parse(localStorage.getItem("user") as string).id;
+          const isCurrentUser =
+            message.to_user_id !=
+            JSON.parse(localStorage.getItem("user") as string).id;
+          const formattedTime = formatTime(message.created_at);
           const messageBox = isCurrentUser ? (
             <Box textAlign="end">
               <Box display="flex" justifyContent="flex-end">
@@ -162,7 +265,9 @@ const Messenger: FC<{ pusherMessages: Message[]; isLoading?: boolean }> = ({
                   <IconButton
                     aria-controls={menuId}
                     aria-haspopup="true"
-                    onClick={handleProfileMenuOpen}
+                    onClick={(e) =>
+                      handleProfileMenuOpen(e, message.id, message.message)
+                    }
                     sx={{ color: "#7269ef", p: 0, mt: 2 }}
                   >
                     <MoreVert sx={{ fontSize: 18 }} />
@@ -176,8 +281,8 @@ const Messenger: FC<{ pusherMessages: Message[]; isLoading?: boolean }> = ({
                     mr: 7,
                     borderRadius: "8px 8px 0 8px",
                     mt: 2,
-                    px: 5,
-                    py: 2,
+                    py: "12px",
+                    px: "20px",
                     bgcolor: "#303841",
                     display: "inline-block",
                     position: "relative",
@@ -214,6 +319,19 @@ const Messenger: FC<{ pusherMessages: Message[]; isLoading?: boolean }> = ({
                   ) : (
                     <></>
                   )}
+                  <Box
+                    display="flex"
+                    justifyContent="flex-start"
+                    alignItems="center"
+                    mt={2}
+                  >
+                    <QueryBuilderOutlined
+                      sx={{ fontSize: 12, color: "#ffffff80", mr: "3px" }}
+                    />
+                    <Typography color="#ffffff80" fontSize={12}>
+                      {formattedTime}
+                    </Typography>
+                  </Box>
                 </Box>
               </Box>
               {/* Avatar and username */}
@@ -239,8 +357,8 @@ const Messenger: FC<{ pusherMessages: Message[]; isLoading?: boolean }> = ({
                     ml: 7,
                     borderRadius: "8px 8px 8px 0",
                     mt: 2,
-                    px: 5,
-                    py: 2,
+                    py: "12px",
+                    px: "20px",
                     bgcolor: "#7269ef",
                     display: "inline-block",
                     position: "relative",
@@ -277,18 +395,34 @@ const Messenger: FC<{ pusherMessages: Message[]; isLoading?: boolean }> = ({
                   <Typography color="#eff2f7" fontSize={14}>
                     {message.message}
                   </Typography>
+                  <Box
+                    display="flex"
+                    justifyContent="flex-end"
+                    alignItems="center"
+                    mt={2}
+                  >
+                    <QueryBuilderOutlined
+                      sx={{ fontSize: 12, color: "#ffffff80", mr: "3px" }}
+                    />
+                    <Typography color="#ffffff80" fontSize={12}>
+                      {formattedTime}
+                    </Typography>
+                  </Box>
                 </Box>
                 {/* More icon for delete and copy */}
                 <Box>
                   <IconButton
                     aria-controls={menuId}
                     aria-haspopup="true"
-                    onClick={handleProfileMenuOpen}
+                    onClick={(e) =>
+                      handleProfileMenuOpenBlue(e, message.message)
+                    }
                     sx={{ color: "#7269ef", p: 0, mt: 2 }}
                   >
                     <MoreVert sx={{ fontSize: 18 }} />
                   </IconButton>
                 </Box>
+                {renderMenu}
               </Box>
               {/* Avatar and username */}
               <Box display="flex" alignItems="end">
@@ -302,9 +436,12 @@ const Messenger: FC<{ pusherMessages: Message[]; isLoading?: boolean }> = ({
           return messageBox;
         })}
         {/* display message realtime */}
-        {pusherMessages.map((message, index, array) => {
+        {pusherMessages.map((message, index) => {
           // check message: message from the current user will have bg: #303841 and the others: #7269ef
-          const isCurrentUser = message.to_user_id != JSON.parse(localStorage.getItem("user") as string).id;
+          const isCurrentUser =
+            message.to_user_id !=
+            JSON.parse(localStorage.getItem("user") as string).id;
+          const formattedTime = formatTime(message.created_at);
           const messageBox = isCurrentUser ? (
             <Box textAlign="end">
               <Box display="flex" justifyContent="flex-end">
@@ -313,7 +450,13 @@ const Messenger: FC<{ pusherMessages: Message[]; isLoading?: boolean }> = ({
                   <IconButton
                     aria-controls={menuId}
                     aria-haspopup="true"
-                    onClick={handleProfileMenuOpen}
+                    onClick={(e) =>
+                      handleProfileMenuOpen(
+                        e,
+                        parseInt(message.id, 10) as number,
+                        message.message
+                      )
+                    }
                     sx={{ color: "#7269ef", p: 0, mt: 2 }}
                   >
                     <MoreVert sx={{ fontSize: 18 }} />
@@ -327,8 +470,8 @@ const Messenger: FC<{ pusherMessages: Message[]; isLoading?: boolean }> = ({
                     mr: 7,
                     borderRadius: "8px 8px 0 8px",
                     mt: 2,
-                    px: 5,
-                    py: 2,
+                    py: "12px",
+                    px: "20px",
                     bgcolor: "#303841",
                     display: "inline-block",
                     position: "relative",
@@ -365,6 +508,19 @@ const Messenger: FC<{ pusherMessages: Message[]; isLoading?: boolean }> = ({
                   ) : (
                     <></>
                   )}
+                  <Box
+                    display="flex"
+                    justifyContent="flex-start"
+                    alignItems="center"
+                    mt={2}
+                  >
+                    <QueryBuilderOutlined
+                      sx={{ fontSize: 12, color: "#ffffff80", mr: "3px" }}
+                    />
+                    <Typography color="#ffffff80" fontSize={12}>
+                      {formattedTime}
+                    </Typography>
+                  </Box>
                 </Box>
               </Box>
               {/* Avatar and username */}
@@ -390,8 +546,8 @@ const Messenger: FC<{ pusherMessages: Message[]; isLoading?: boolean }> = ({
                     ml: 7,
                     borderRadius: "8px 8px 8px 0",
                     mt: 2,
-                    px: 5,
-                    py: 2,
+                    py: "12px",
+                    px: "20px",
                     bgcolor: "#7269ef",
                     display: "inline-block",
                     position: "relative",
@@ -428,18 +584,34 @@ const Messenger: FC<{ pusherMessages: Message[]; isLoading?: boolean }> = ({
                   <Typography color="#eff2f7" fontSize={14}>
                     {message.message}
                   </Typography>
+                  <Box
+                    display="flex"
+                    justifyContent="flex-end"
+                    alignItems="center"
+                    mt={2}
+                  >
+                    <QueryBuilderOutlined
+                      sx={{ fontSize: 12, color: "#ffffff80", mr: "3px" }}
+                    />
+                    <Typography color="#ffffff80" fontSize={12}>
+                      {formattedTime}
+                    </Typography>
+                  </Box>
                 </Box>
                 {/* More icon for delete and copy */}
                 <Box>
                   <IconButton
                     aria-controls={menuId}
                     aria-haspopup="true"
-                    onClick={handleProfileMenuOpen}
+                    onClick={(e) =>
+                      handleProfileMenuOpenBlue(e, message.message)
+                    }
                     sx={{ color: "#7269ef", p: 0, mt: 2 }}
                   >
                     <MoreVert sx={{ fontSize: 18 }} />
                   </IconButton>
                 </Box>
+                {renderMenu}
               </Box>
               {/* Avatar and username */}
               <Box display="flex" alignItems="end">

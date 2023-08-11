@@ -241,7 +241,7 @@ const Chat: FC<{
                     <Avatar alt={user.toUserName} src={user.toUserAvatar} />
                   </StyledBadge>
                 </CardContent>
-                <Box pt={2} width={300} textAlign="left">
+                <Box pt={2} width={250} textAlign="left">
                   <Typography
                     color="#eff2f7"
                     fontSize={15}
