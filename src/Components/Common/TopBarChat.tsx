@@ -13,7 +13,6 @@ import {
   Avatar,
   Badge,
   Button,
-  CircularProgress,
   Divider,
   Modal,
   Typography,
@@ -23,35 +22,6 @@ import { styled } from "@mui/material/styles";
 import ApiMessage from "../../Services/Message";
 import { Message } from "../Common/Messenger";
 
-const StyledBadge = styled(Badge)(({ theme }) => ({
-  "& .MuiBadge-badge": {
-    backgroundColor: "#44b700",
-    color: "#44b700",
-    bottom: "32%",
-    boxShadow: `0 0 0 2px ${theme.palette.background.paper}`,
-    "&::after": {
-      position: "absolute",
-      top: 0,
-      left: 0,
-      width: "100%",
-      height: "100%",
-      borderRadius: "50%",
-      animation: "ripple 1.2s infinite ease-in-out",
-      border: "1px solid currentColor",
-      content: '""',
-    },
-  },
-  "@keyframes ripple": {
-    "0%": {
-      transform: "scale(.8)",
-      opacity: 1,
-    },
-    "100%": {
-      transform: "scale(2.4)",
-      opacity: 0,
-    },
-  },
-}));
 
 const style = {
   position: "absolute" as "absolute",
@@ -138,13 +108,7 @@ const TopBarChat: FC<{
         px={3}
       >
         <Box display="flex">
-          <StyledBadge
-            overlap="circular"
-            anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-            variant="dot"
-          >
-            <Avatar alt={toUser.toUserName} src={toUser.toUserAvatar} />
-          </StyledBadge>
+          <Avatar alt={toUser.toUserName} src={toUser.toUserAvatar} />
           <Typography ml={3} fontSize={16} color="#eff2f7" lineHeight={3}>
             {toUser.toUserName}
           </Typography>

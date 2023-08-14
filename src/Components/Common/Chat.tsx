@@ -1,14 +1,4 @@
-import {
-  Avatar,
-  Badge,
-  Box,
-  Button,
-  Card,
-  CardContent,
-  InputBase,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Avatar, Badge, Box, Button, Card, CardContent, InputBase, Stack, Typography } from "@mui/material";
 import React, { FC, useContext, useEffect, useState } from "react";
 import { styled, alpha } from "@mui/material/styles";
 import SearchIcon from "@mui/icons-material/Search";
@@ -18,6 +8,8 @@ import { ChatWithUserContext } from "./ChatWithUserProvider";
 import ApiMessage from "../../Services/Message";
 import { Message } from "./Messenger";
 import { ToUser } from "./ChatWithUserProvider";
+import Pusher from "pusher-js";
+import ApiAuth from "../../Services/Auth";
 // style for search
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -177,6 +169,42 @@ const Chat: FC<{
     setPusherMessages([]);
   };
 
+  // active users get from db
+  const [activeUserIdDB, setActiveUserIdDB] = useState<number[]>([]);
+  useEffect(() => {
+    ApiAuth.getUserIdLogged()
+      .then((res) => {
+        res.data.map((item: any) =>
+          setActiveUserIdDB((prev: number[]) => [...prev, item?.user_id_logged])
+        );
+      })
+      .catch((err) => console.log(err));
+  }, []);
+  // use Pusher to display active user
+  const [activeUserIdRealTime, setActiveUserIdRealTime] = useState<number[]>([]);
+  var pusher = new Pusher("96e68ac1a93c911b481f", {
+    cluster: "ap1",
+  });
+  // connect to pusher event user loggin 
+  // Note: it just displays user who log in after you 
+  var channel = pusher.subscribe("User-Logged");
+  var channelLogout = pusher.subscribe("User-Logout");
+  const handleActiveUser = (data: any) => {
+    setActiveUserIdRealTime((prevUser: number[]) => [...prevUser, data.id]);
+  };
+  const handleUserLogout = (data:any) => {
+    console.log(data);
+    setActiveUserIdRealTime((prevUser: number[]) => prevUser.filter((value) => value !== data.id));
+  }
+  // get userId from pusher
+  useEffect(() => {
+    channel.bind("userlogged", handleActiveUser);
+    channelLogout.bind("userlogout", handleUserLogout);
+    return () => {
+      channel.unbind("userlogged", handleActiveUser);
+      channelLogout.bind("userlogout", handleUserLogout);
+    };
+  }, [channel, channelLogout]);
   return (
     <Stack spacing={2} pt={2}>
       <Box display="block" textAlign="left" px={3}>
@@ -199,16 +227,22 @@ const Chat: FC<{
       {/* friends active */}
       <Stack direction="row" spacing={2} px={3}>
         {users.map((user, index) => {
+          const isActiveDB = activeUserIdDB.includes(user.toUserId);
+          const isActiveRT = activeUserIdRealTime.includes(user.toUserId);
           return (
-            <Card sx={{ bgcolor: "#ffffff26" }}>
+            <Card sx={{ bgcolor: "#ffffff26" }} key={index}>
               <CardContent>
-                <StyledBadge
-                  overlap="circular"
-                  anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-                  variant="dot"
-                >
+                {(isActiveRT||isActiveDB) ? (
+                  <StyledBadge
+                    overlap="circular"
+                    anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                    variant="dot"
+                  >
+                    <Avatar alt={user.toUserName} src={user.toUserAvatar} />
+                  </StyledBadge>
+                ) : (
                   <Avatar alt={user.toUserName} src={user.toUserAvatar} />
-                </StyledBadge>
+                )}
                 <Typography color="#eff2f7" fontSize={13} sx={{ mt: 1 }}>
                   {user.toUserName}
                 </Typography>
@@ -229,17 +263,23 @@ const Chat: FC<{
         className="container"
       >
         {users.map((user, index) => {
+          const isActiveDB = activeUserIdDB.includes(user.toUserId);
+          const isActiveRT = activeUserIdRealTime.includes(user.toUserId);
           return (
-            <Button onClick={() => handleShowMessage(user)} variant="text">
+            <Button key={index} onClick={() => handleShowMessage(user)} variant="text">
               <Stack direction="row">
                 <CardContent>
-                  <StyledBadge
-                    overlap="circular"
-                    anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-                    variant="dot"
-                  >
+                  {(isActiveRT||isActiveDB) ? (
+                    <StyledBadge
+                      overlap="circular"
+                      anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                      variant="dot"
+                    >
+                      <Avatar alt={user.toUserName} src={user.toUserAvatar} />
+                    </StyledBadge>
+                  ) : (
                     <Avatar alt={user.toUserName} src={user.toUserAvatar} />
-                  </StyledBadge>
+                  )}
                 </CardContent>
                 <Box pt={2} width={250} textAlign="left">
                   <Typography
