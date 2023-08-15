@@ -24,3 +24,12 @@
   background-color: "#36404a" !important;
   border-radius: 0 !important;
 }
+
+@keyframes wave {
+  0%, 60%, 100% {
+    transform: none;
+  }
+  30% {
+    transform: translateY(-5px); 
+  }
+}

@@ -232,6 +232,49 @@ const Messenger: FC<{ pusherMessages: Message[]; isLoading?: boolean, setPusherM
       </MenuList>
     </Menu>
   );
+
+  // realtime typing feature
+  const [isTyping, setIsTyping] = useState(false);
+  const [fromUserId, setFromUserId] = useState(0);
+  const handleInputFocus = () =>{
+    const payload = {
+      isTyping : true,
+      conversationId: conversationId,
+    }
+    ApiMessage.typingMessage(payload)
+    .then((res)=>{
+
+    })
+    .catch((err)=>console.log(err));
+  }
+
+  const handleInputBlur = () => {
+    const payload = {
+      isTyping : false,
+      conversationId: conversationId,
+    }
+    ApiMessage.typingMessage(payload)
+    .then((res)=>{
+      
+    })
+    .catch((err)=>console.log(err));
+  }
+
+  var channelTyping = pusher.subscribe("Typing-Channel-"+conversationId);
+
+  const handleUpdateTyping = (data:any) =>{
+    console.log(data.isTyping);
+    setIsTyping(data.isTyping);
+    setFromUserId(data.from_user_id);
+  }
+
+  useEffect(() => {
+    channelTyping.bind("typing-event", handleUpdateTyping);
+    return () => {
+      channelTyping.unbind("typing-event", handleUpdateTyping);
+    };
+  }, [channelTyping]);
+
   return (
     <>
       <Box
@@ -584,6 +627,7 @@ const Messenger: FC<{ pusherMessages: Message[]; isLoading?: boolean, setPusherM
                   <Typography color="#eff2f7" fontSize={14}>
                     {message.message}
                   </Typography>
+                  {isTyping ? <Typography>Dang Nhap</Typography> : <Box></Box>}
                   <Box
                     display="flex"
                     justifyContent="flex-end"
@@ -624,6 +668,93 @@ const Messenger: FC<{ pusherMessages: Message[]; isLoading?: boolean, setPusherM
           );
           return messageBox;
         })}
+        {/* diplay typing */}
+        {isTyping &&
+        fromUserId !== JSON.parse(localStorage.getItem("user") as string).id ? (
+          <Box textAlign="left">
+            <Box display="flex">
+              <Box
+                sx={{
+                  ml: 7,
+                  borderRadius: "8px 8px 8px 0",
+                  mt: 2,
+                  py: "12px",
+                  px: "20px",
+                  bgcolor: "#7269ef",
+                  display: "inline-block",
+                  position: "relative",
+                  "&::before": {
+                    borderBottom: "5px solid transparent",
+                    borderLeft: "5px solid #7269ef",
+                    borderRight: "5px solid transparent",
+                    borderTop: "5px solid #7269ef",
+                    bottom: "-9px",
+                    content: '""',
+                    left: 0,
+                    position: "absolute",
+                    right: "auto",
+                  },
+                }}
+              >
+                <Box display='flex'>
+                  <Typography color="#eff2f7">typing</Typography>
+                  <Box>
+                    <Box
+                      sx={{
+                        animation: "wave 1.3s linear infinite",
+                        bgcolor: "#fff",
+                        borderRadius: "50%",
+                        display: "inline-block",
+                        height: "4px",
+                        marginRight: "-1px",
+                        marginLeft:".25rem",
+                        opacity: ".6",
+                        width: "4px",
+                      }}
+                    ></Box>
+                    <Box
+                      sx={{
+                        animation: "wave 1.3s linear infinite",
+                        bgcolor: "#fff",
+                        borderRadius: "50%",
+                        display: "inline-block",
+                        height: "4px",
+                        marginLeft:".25rem",
+                        marginRight: "-1px",
+                        opacity: ".6",
+                        width: "4px",
+                        animationDelay: "-1.1s",
+                      }}
+                    ></Box>
+                    <Box
+                      sx={{
+                        animation: "wave 1.3s linear infinite",
+                        bgcolor: "#fff",
+                        borderRadius: "50%",
+                        display: "inline-block",
+                        height: "4px",
+                        marginLeft:".25rem",
+                        marginRight: "-1px",
+                        opacity: ".6",
+                        width: "4px",
+                        animationDelay: "-.9s",
+                      }}
+                    ></Box>
+                  </Box>
+                </Box>
+              </Box>
+            </Box>
+            {/* Avatar and username */}
+            <Box display="flex" alignItems="end">
+              <Avatar src={toUser.toUserAvatar} alt={toUser.toUserName} />
+              <Typography color="#a6b0cf" fontSize={14} marginLeft={2}>
+                {toUser.toUserName}
+              </Typography>
+            </Box>
+          </Box>
+        ) : (
+          <Box></Box>
+        )}
       </Box>
       <Divider sx={{ bgcolor: "#36404a" }} />
       {/* Footer of screen */}
@@ -645,6 +776,8 @@ const Messenger: FC<{ pusherMessages: Message[]; isLoading?: boolean, setPusherM
           }}
           value={sendMess}
           onChange={(e) => setTextInput(e.target.value)}
+          onBlur={handleInputBlur}
+          onFocus={handleInputFocus}
         />
         <IconButton sx={{ color: "#7a7f9a" }}>
           <SentimentSatisfiedOutlined />

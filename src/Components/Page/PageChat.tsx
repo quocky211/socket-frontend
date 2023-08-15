@@ -33,18 +33,35 @@ const PageChat = () => {
     };
   }, [channel]);
   return (
-    <Box display="grid" gridTemplateColumns="0.4fr 1.5fr 3fr" height="100%">
-      <Box bgcolor="#36404a">
-        <NavBar />
+    <Box
+      display="grid"
+      gridTemplateColumns={{ xs: "1fr",sm:"1fr 1fr", md: "0.4fr 1.5fr 3fr" }}
+      height="100%"
+    >
+      <Box bgcolor="#36404a" sx={{display: {xs: 'none', md:'block'}}}>
+        <NavBar style={{display:'grid'}}/>
+      </Box>
+      <Box bgcolor="#36404a" sx={{display: {xs: 'block', sm:'none'}}}>
+        <NavBar style={{display:'flex', justifyContent:'space-around', padding: 0,}}/>
       </Box>
       <Box bgcolor="#303841">
-        {feature === "chat" && <Chat pusherMessages={pusherMessages} setPusherMessages={setPusherMessages} setIsLoading={setIsLoading}/>}
+        {feature === "chat" && (
+          <Chat
+            pusherMessages={pusherMessages} 
+            setPusherMessages={setPusherMessages}
+            setIsLoading={setIsLoading}
+          />
+        )}
         {feature === "notification" && <Notification />}
-        {feature === "setting" && <SettingAccount/>}
+        {feature === "setting" && <SettingAccount />}
       </Box>
       <Box width="100%" height="100vh" bgcolor="#262e35">
-        <TopBarChat setPusherMessages={setPusherMessages}/>
-        <Messenger pusherMessages={pusherMessages} isLoading={isLoading} setPusherMessages={setPusherMessages}/>
+        <TopBarChat setPusherMessages={setPusherMessages} />
+        <Messenger
+          pusherMessages={pusherMessages}
+          isLoading={isLoading}
+          setPusherMessages={setPusherMessages}
+        />
       </Box>
     </Box>
   );

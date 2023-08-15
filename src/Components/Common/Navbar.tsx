@@ -6,15 +6,9 @@ import AccountCircle from "@mui/icons-material/AccountCircle";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import Auth from "../../Services/Auth";
 import { useNavigate } from "react-router-dom";
-import {
-  Chat,
-  Group,
-  Logout,
-  Settings,
-  WbSunny,
-} from "@mui/icons-material";
+import { Chat, Group, Logout, Settings, WbSunny } from "@mui/icons-material";
 import { NotificationMessageContext } from "./NotificationProvider";
-import { useContext, useEffect } from "react";
+import { FC, useContext, useEffect } from "react";
 import { FeatureContext } from "./FeatureProvider";
 import Pusher from "pusher-js";
 
@@ -27,9 +21,13 @@ export interface NotiMessage {
   from_user_id: number;
   body: string;
 }
-
-const NavBar = () => {
-
+interface styleNavBar {
+  display?: string;
+  padding?: number;
+  justifyContent?: string;
+  position?: 'relative'|'absolute';
+}
+const NavBar: FC<{ style: styleNavBar }> = ({ style }) => {
   const navigate = useNavigate();
 
   // use context
@@ -81,7 +79,6 @@ const NavBar = () => {
       .catch((err) => {
         console.log(err);
       });
-
   };
 
   const handleNotification = (feature: string) => {
@@ -90,7 +87,12 @@ const NavBar = () => {
   };
   return (
     <Box sx={{ bgcolor: "inherit" }}>
-      <Box pt={4} display="grid">
+      <Box
+        pt={4}
+        display={style.display}
+        justifyContent={style.justifyContent}
+        padding={style.padding}
+      >
         <IconButton
           size="large"
           color="inherit"
@@ -130,7 +132,12 @@ const NavBar = () => {
         >
           <AccountCircle fontSize="large" sx={{ color: "#abb4d2" }} />
         </IconButton>
-        <IconButton size="large" color="inherit" sx={{ my: 1 }} onClick={handleLogout}>
+        <IconButton
+          size="large"
+          color="inherit"
+          sx={{ my: 1 }}
+          onClick={handleLogout}
+        >
           <Logout fontSize="large" sx={{ color: "#abb4d2" }} />
         </IconButton>
       </Box>

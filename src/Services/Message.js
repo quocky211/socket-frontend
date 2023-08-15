@@ -17,6 +17,11 @@ class Message {
     return await axios.get(`http://localhost:8000/api/conversationId/${id}`);
   }
 
+  async typingMessage(data) {
+    return await axios.post(
+     'http://localhost:8000/api/typing-status', data
+    );
+  }
 
   async deleteConversation(userId) {
     return await axios.delete(
