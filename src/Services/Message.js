@@ -17,6 +17,10 @@ class Message {
     return await axios.get(`http://localhost:8000/api/conversationId/${id}`);
   }
 
+  async searchChat(userId,search) {
+    return await axios.get(`http://localhost:8000/api/search?userId=${userId}&&search=${search}`);
+  }
+
   async typingMessage(data) {
     return await axios.post(
      'http://localhost:8000/api/typing-status', data

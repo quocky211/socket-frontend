@@ -1,5 +1,5 @@
 import { Box } from "@mui/material";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import NavBar from "../Common/Navbar";
 import Chat from "../Common/Chat";
 import TopBarChat from "../Common/TopBarChat";
@@ -32,6 +32,18 @@ const PageChat = () => {
       channel.unbind("message", handleNewMessage);
     };
   }, [channel]);
+
+  // search
+  const messagesRef = useRef<HTMLDivElement[]>([]) 
+  const scrollToMessage = (messageId: number) => {
+    const messageRef = messagesRef.current[messageId];
+    if (messageRef) {
+      messageRef.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
+  };
   return (
     <Box
       display="grid"
@@ -56,11 +68,12 @@ const PageChat = () => {
         {feature === "setting" && <SettingAccount />}
       </Box>
       <Box width="100%" height="100vh" bgcolor="#262e35">
-        <TopBarChat setPusherMessages={setPusherMessages} />
+        <TopBarChat setPusherMessages={setPusherMessages} scrollToMessage={scrollToMessage}/>
         <Messenger
           pusherMessages={pusherMessages}
           isLoading={isLoading}
           setPusherMessages={setPusherMessages}
+          messagesRef={messagesRef}
         />
       </Box>
     </Box>

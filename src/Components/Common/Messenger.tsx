@@ -1,7 +1,34 @@
-import { ContentCopy, DeleteOutlined, InsertLinkOutlined, InsertPhotoOutlined, MoreVert, Send, SentimentSatisfiedOutlined, QueryBuilderOutlined, Api } from "@mui/icons-material";
-import React, { FC, useContext, useEffect, useState } from "react";
+import {
+  ContentCopy,
+  DeleteOutlined,
+  InsertLinkOutlined,
+  InsertPhotoOutlined,
+  MoreVert,
+  Send,
+  SentimentSatisfiedOutlined,
+  QueryBuilderOutlined,
+} from "@mui/icons-material";
+import React, {
+  FC,
+  MutableRefObject,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import "../css/common.css";
-import { Avatar, Box, Button, CircularProgress, Divider, IconButton, Menu, MenuItem, MenuList, TextField, Typography } from "@mui/material";
+import {
+  Avatar,
+  Box,
+  Button,
+  CircularProgress,
+  Divider,
+  IconButton,
+  Menu,
+  MenuItem,
+  MenuList,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { ChatWithUserContext } from "./ChatWithUserProvider";
 import ApiMessage from "../../Services/Message";
 import { useRef } from "react";
@@ -21,11 +48,12 @@ export interface Message {
   created_at: Date;
 }
 
-const Messenger: FC<{ pusherMessages: Message[]; isLoading?: boolean, setPusherMessages: (pusherMessage: Message[]) => void; }> = ({
-  pusherMessages,
-  isLoading,
-  setPusherMessages,
-}) => {
+const Messenger: FC<{
+  pusherMessages: Message[];
+  isLoading?: boolean;
+  messagesRef: MutableRefObject<HTMLDivElement[]>;
+  setPusherMessages: (pusherMessage: Message[]) => void;
+}> = ({ pusherMessages, isLoading, messagesRef, setPusherMessages }) => {
   // state for input message
   const [textInput, setTextInput] = useState("");
   // state for input file
@@ -65,7 +93,8 @@ const Messenger: FC<{ pusherMessages: Message[]; isLoading?: boolean, setPusherM
   };
 
   // use context to get to_user_id
-  const { toUser, messages, conversationId, updateMessages } = useContext(ChatWithUserContext);
+  const { toUser, messages, conversationId, updateMessages } =
+    useContext(ChatWithUserContext);
   // use to scroll to bottom
   useEffect(() => {
     scrollToBottom();
@@ -236,37 +265,33 @@ const Messenger: FC<{ pusherMessages: Message[]; isLoading?: boolean, setPusherM
   // realtime typing feature
   const [isTyping, setIsTyping] = useState(false);
   const [fromUserId, setFromUserId] = useState(0);
-  const handleInputFocus = () =>{
+  const handleInputFocus = () => {
     const payload = {
-      isTyping : true,
+      isTyping: true,
       conversationId: conversationId,
-    }
+    };
     ApiMessage.typingMessage(payload)
-    .then((res)=>{
-
-    })
-    .catch((err)=>console.log(err));
-  }
+      .then((res) => {})
+      .catch((err) => console.log(err));
+  };
 
   const handleInputBlur = () => {
     const payload = {
-      isTyping : false,
+      isTyping: false,
       conversationId: conversationId,
-    }
+    };
     ApiMessage.typingMessage(payload)
-    .then((res)=>{
-      
-    })
-    .catch((err)=>console.log(err));
-  }
+      .then((res) => {})
+      .catch((err) => console.log(err));
+  };
 
-  var channelTyping = pusher.subscribe("Typing-Channel-"+conversationId);
+  var channelTyping = pusher.subscribe("Typing-Channel-" + conversationId);
 
-  const handleUpdateTyping = (data:any) =>{
+  const handleUpdateTyping = (data: any) => {
     console.log(data.isTyping);
     setIsTyping(data.isTyping);
     setFromUserId(data.from_user_id);
-  }
+  };
 
   useEffect(() => {
     channelTyping.bind("typing-event", handleUpdateTyping);
@@ -301,7 +326,12 @@ const Messenger: FC<{ pusherMessages: Message[]; isLoading?: boolean, setPusherM
             JSON.parse(localStorage.getItem("user") as string).id;
           const formattedTime = formatTime(message.created_at);
           const messageBox = isCurrentUser ? (
-            <Box textAlign="end">
+            <Box
+              textAlign="end"
+              ref={(ref) =>
+                (messagesRef.current[message.id] = ref as HTMLDivElement)
+              }
+            >
               <Box display="flex" justifyContent="flex-end">
                 {/* More icon for delete and copy */}
                 <Box>
@@ -391,7 +421,12 @@ const Messenger: FC<{ pusherMessages: Message[]; isLoading?: boolean, setPusherM
               </Box>
             </Box>
           ) : (
-            <Box textAlign="left">
+            <Box
+              textAlign="left"
+              ref={(ref) =>
+                (messagesRef.current[message.id] = ref as HTMLDivElement)
+              }
+            >
               <Box display="flex">
                 {/* Message */}
                 <Box
@@ -627,7 +662,6 @@ const Messenger: FC<{ pusherMessages: Message[]; isLoading?: boolean, setPusherM
                   <Typography color="#eff2f7" fontSize={14}>
                     {message.message}
                   </Typography>
-                  {isTyping ? <Typography>Dang Nhap</Typography> : <Box></Box>}
                   <Box
                     display="flex"
                     justifyContent="flex-end"
@@ -696,7 +730,7 @@ const Messenger: FC<{ pusherMessages: Message[]; isLoading?: boolean, setPusherM
                   },
                 }}
               >
-                <Box display='flex'>
+                <Box display="flex">
                   <Typography color="#eff2f7">typing</Typography>
                   <Box>
                     <Box
@@ -707,7 +741,7 @@ const Messenger: FC<{ pusherMessages: Message[]; isLoading?: boolean, setPusherM
                         display: "inline-block",
                         height: "4px",
                         marginRight: "-1px",
-                        marginLeft:".25rem",
+                        marginLeft: ".25rem",
                         opacity: ".6",
                         width: "4px",
                       }}
@@ -719,7 +753,7 @@ const Messenger: FC<{ pusherMessages: Message[]; isLoading?: boolean, setPusherM
                         borderRadius: "50%",
                         display: "inline-block",
                         height: "4px",
-                        marginLeft:".25rem",
+                        marginLeft: ".25rem",
                         marginRight: "-1px",
                         opacity: ".6",
                         width: "4px",
@@ -733,7 +767,7 @@ const Messenger: FC<{ pusherMessages: Message[]; isLoading?: boolean, setPusherM
                         borderRadius: "50%",
                         display: "inline-block",
                         height: "4px",
-                        marginLeft:".25rem",
+                        marginLeft: ".25rem",
                         marginRight: "-1px",
                         opacity: ".6",
                         width: "4px",
@@ -755,6 +789,7 @@ const Messenger: FC<{ pusherMessages: Message[]; isLoading?: boolean, setPusherM
         ) : (
           <Box></Box>
         )}
+        {/* <Button onClick={(e)=>scrollToMessage(1)}>Search</Button> */}
       </Box>
       <Divider sx={{ bgcolor: "#36404a" }} />
       {/* Footer of screen */}

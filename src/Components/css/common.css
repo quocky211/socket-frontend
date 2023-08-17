@@ -24,6 +24,9 @@
   background-color: "#36404a" !important;
   border-radius: 0 !important;
 }
+/* .MuiPaper-root{
+  background-color: #303841 !important;
+} */
 
 @keyframes wave {
   0%, 60%, 100% {
