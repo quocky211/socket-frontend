@@ -1,4 +1,14 @@
-import { Avatar, Badge, Box, Button, Card, CardContent, InputBase, Stack, Typography } from "@mui/material";
+import {
+  Avatar,
+  Badge,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  InputBase,
+  Stack,
+  Typography,
+} from "@mui/material";
 import React, { FC, useContext, useEffect, useState } from "react";
 import { styled, alpha } from "@mui/material/styles";
 import SearchIcon from "@mui/icons-material/Search";
@@ -107,22 +117,25 @@ const Chat: FC<{
   const getListFriends = (firstTime: boolean) => {
     ApiUser.getAllUsers()
       .then((res) => {
-        const userList = res.data.map((user: any)=>{
-          return{
-            toUserId : user.id,
+        const userList = res.data.map((user: any) => {
+          if (user.lastMessage === "Never contact") {
+            return null;
+          }
+          return {
+            toUserId: user.id,
             toUserName: user.name,
             toUserAvatar: user.avatar,
             lastMessage: user.lastMessage,
-          }
-        })
+          };
+        });
         setUsers(userList);
         if (firstTime) {
           // default value when open browser
           const toUser = {
-            toUserId : res.data[0].id,
+            toUserId: res.data[0].id,
             toUserName: res.data[0].name,
             toUserAvatar: res.data[0].avatar,
-          }
+          };
           changeUser(toUser);
           ApiMessage.getMessagesWithUser(res.data[0].id).then((res1) => {
             updateMessages(res1.data);
@@ -147,24 +160,40 @@ const Chat: FC<{
   const handleShowMessage = (user: UserDisplay) => {
     setIsLoading(true);
     changeUser(user);
-    // api get all messages with a user
-    ApiMessage.getMessagesWithUser(user.toUserId)
-      .then((res) => {
-        updateMessages(res.data);
+
+    Promise.all([
+      ApiMessage.getMessagesWithUser(user.toUserId),
+      ApiMessage.getConversatiion(user.toUserId),
+    ])
+      .then((res: any) => {
+        if (res.every((resItem: any) => resItem.status === 200)) {
+          updateMessages(res[0].data);
+          updateConversationId(res[1].data);
+        }
+        setIsLoading(false);
       })
-      .catch((err) => {
-        console.log(err);
+      .catch((e) => {
+        console.log("Error: ", e);
+        setIsLoading(false);
       });
 
+    // api get all messages with a user
+    // ApiMessage.getMessagesWithUser(user.toUserId)
+    //   .then((res) => {
+    //     updateMessages(res.data);
+    //   })
+    //   .catch((err) => {
+    //     console.log(err);
+    //   });
+
     // api get conversation id
-    ApiMessage.getConversatiion(user.toUserId)
-      .then((res) => {
-        updateConversationId(res.data);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-    setIsLoading(false);
+    // ApiMessage.getConversatiion(user.toUserId)
+    //   .then((res) => {
+    //     updateConversationId(res.data);
+    //   })
+    //   .catch((err) => {
+    //     console.log(err);
+    //   });
     // message from pusher will be empty
     setPusherMessages([]);
   };
@@ -181,21 +210,25 @@ const Chat: FC<{
       .catch((err) => console.log(err));
   }, []);
   // use Pusher to display active user
-  const [activeUserIdRealTime, setActiveUserIdRealTime] = useState<number[]>([]);
+  const [activeUserIdRealTime, setActiveUserIdRealTime] = useState<number[]>(
+    []
+  );
   var pusher = new Pusher("96e68ac1a93c911b481f", {
     cluster: "ap1",
   });
-  // connect to pusher event user loggin 
-  // Note: it just displays user who log in after you 
+  // connect to pusher event user loggin
+  // Note: it just displays user who log in after you
   var channel = pusher.subscribe("User-Logged");
   var channelLogout = pusher.subscribe("User-Logout");
   const handleActiveUser = (data: any) => {
     setActiveUserIdRealTime((prevUser: number[]) => [...prevUser, data.id]);
   };
-  const handleUserLogout = (data:any) => {
+  const handleUserLogout = (data: any) => {
     console.log(data);
-    setActiveUserIdRealTime((prevUser: number[]) => prevUser.filter((value) => value !== data.id));
-  }
+    setActiveUserIdRealTime((prevUser: number[]) =>
+      prevUser.filter((value) => value !== data.id)
+    );
+  };
   // get userId from pusher
   useEffect(() => {
     channel.bind("userlogged", handleActiveUser);
@@ -227,12 +260,15 @@ const Chat: FC<{
       {/* friends active */}
       <Stack direction="row" spacing={2} px={3}>
         {users.map((user, index) => {
+          if (user === null) {
+            return null;
+          }
           const isActiveDB = activeUserIdDB.includes(user.toUserId);
           const isActiveRT = activeUserIdRealTime.includes(user.toUserId);
           return (
             <Card sx={{ bgcolor: "#ffffff26" }} key={index}>
               <CardContent>
-                {(isActiveRT||isActiveDB) ? (
+                {isActiveRT || isActiveDB ? (
                   <StyledBadge
                     overlap="circular"
                     anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
@@ -263,13 +299,20 @@ const Chat: FC<{
         className="container"
       >
         {users.map((user, index) => {
+          if (user === null) {
+            return null;
+          }
           const isActiveDB = activeUserIdDB.includes(user.toUserId);
           const isActiveRT = activeUserIdRealTime.includes(user.toUserId);
           return (
-            <Button key={index} onClick={() => handleShowMessage(user)} variant="text">
+            <Button
+              key={index}
+              onClick={() => handleShowMessage(user)}
+              variant="text"
+            >
               <Stack direction="row">
                 <CardContent>
-                  {(isActiveRT||isActiveDB) ? (
+                  {isActiveRT || isActiveDB ? (
                     <StyledBadge
                       overlap="circular"
                       anchorOrigin={{ vertical: "bottom", horizontal: "right" }}

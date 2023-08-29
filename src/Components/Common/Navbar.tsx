@@ -81,7 +81,7 @@ const NavBar: FC<{ style: styleNavBar }> = ({ style }) => {
       });
   };
 
-  const handleNotification = (feature: string) => {
+  const handleChangeFeature = (feature: string) => {
     change(feature);
     updateNumber(0);
   };
@@ -89,6 +89,7 @@ const NavBar: FC<{ style: styleNavBar }> = ({ style }) => {
     <Box sx={{ bgcolor: "inherit" }}>
       <Box
         pt={4}
+        px={1}
         display={style.display}
         justifyContent={style.justifyContent}
         padding={style.padding}
@@ -97,18 +98,18 @@ const NavBar: FC<{ style: styleNavBar }> = ({ style }) => {
           size="large"
           color="inherit"
           sx={{ my: 1 }}
-          onClick={() => handleNotification("chat")}
+          onClick={() => handleChangeFeature("chat")}
         >
           <Chat fontSize="large" sx={{ color: "#abb4d2" }} />
         </IconButton>
-        <IconButton size="large" color="inherit" sx={{ my: 1 }}>
+        <IconButton size="large" color="inherit" sx={{ my: 1 }} onClick={() => handleChangeFeature("contact")}>
           <Group fontSize="large" sx={{ color: "#abb4d2" }} />
         </IconButton>
         <IconButton
           size="large"
           color="inherit"
           sx={{ my: 1 }}
-          onClick={() => handleNotification("notification")}
+          onClick={() => handleChangeFeature("notification")}
         >
           <Badge badgeContent={theNuNotification} color="error">
             <NotificationsIcon fontSize="large" sx={{ color: "#abb4d2" }} />
@@ -118,7 +119,7 @@ const NavBar: FC<{ style: styleNavBar }> = ({ style }) => {
           size="large"
           color="inherit"
           sx={{ my: 1 }}
-          onClick={() => handleNotification("setting")}
+          onClick={() => handleChangeFeature("setting")}
         >
           <Settings fontSize="large" sx={{ color: "#abb4d2" }} />
         </IconButton>
@@ -128,7 +129,7 @@ const NavBar: FC<{ style: styleNavBar }> = ({ style }) => {
         <IconButton
           size="large"
           color="inherit"
-          onClick={() => handleNotification("setting")}
+          onClick={() => handleChangeFeature("setting")}
         >
           <AccountCircle fontSize="large" sx={{ color: "#abb4d2" }} />
         </IconButton>

@@ -26,6 +26,7 @@ import { styled } from "@mui/material/styles";
 import ApiMessage from "../../Services/Message";
 import { Message } from "../Common/Messenger";
 import '../css/common.css';
+import {useStyles} from "./Messenger";
 // style for modal 
 const style = {
   position: "absolute" as "absolute",
@@ -98,6 +99,8 @@ const TopBarChat: FC<{
   };
 
   const menuId = "primary-search-account-menu";
+  const classes: any = useStyles();
+
   // component menu
   const renderMenu = (
     <Menu
@@ -108,6 +111,7 @@ const TopBarChat: FC<{
       }}
       id={menuId}
       keepMounted
+      classes={{ paper: classes.menuPaper }}
       transformOrigin={{
         vertical: "top",
         horizontal: "right",
@@ -115,8 +119,8 @@ const TopBarChat: FC<{
       open={isMenuOpen}
       onClose={handleMenuClose}
     >
-      <MenuItem onClick={handleOpenDeleteBox}>Delete</MenuItem>
-      <MenuItem onClick={handleMenuClose}>Logout</MenuItem>
+      <MenuItem sx={{color:'#a6b0cf', fontSize:16}} onClick={handleOpenDeleteBox}>Delete</MenuItem>
+      <MenuItem sx={{color:'#a6b0cf', fontSize:16}} onClick={handleMenuClose}>Logout</MenuItem>
     </Menu>
   );
 
@@ -220,6 +224,7 @@ const TopBarChat: FC<{
             open={openSearch}
             anchorEl={anchorElSearch}
             onClose={handleCloseSearch}
+            classes={{ paper: classes.menuPaper }}
             anchorOrigin={{
               vertical: "bottom",
               horizontal: "left",

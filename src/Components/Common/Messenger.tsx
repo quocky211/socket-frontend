@@ -25,15 +25,15 @@ import {
   IconButton,
   Menu,
   MenuItem,
-  MenuList,
   TextField,
+  Theme,
   Typography,
 } from "@mui/material";
 import { ChatWithUserContext } from "./ChatWithUserProvider";
 import ApiMessage from "../../Services/Message";
 import { useRef } from "react";
 import Pusher from "pusher-js";
-
+import { makeStyles } from "@mui/styles";
 /**
  * interface for Message
  * @property {number} to_user_id
@@ -47,6 +47,13 @@ export interface Message {
   image: string;
   created_at: Date;
 }
+
+export const useStyles: any = makeStyles((theme: Theme) => ({
+  menuPaper: {
+    backgroundColor: "#36404a",
+    boxShadow: "none",
+  },
+}));
 
 const Messenger: FC<{
   pusherMessages: Message[];
@@ -72,6 +79,7 @@ const Messenger: FC<{
         containerRef.current.scrollHeight - containerRef.current.clientHeight;
     }
   }
+  const classes: any = useStyles();
 
   // open menu for each message
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -227,6 +235,7 @@ const Messenger: FC<{
         horizontal: "right",
       }}
       id={menuId}
+      classes={{ paper: classes.menuPaper }}
       keepMounted
       transformOrigin={{
         vertical: 30,
@@ -235,30 +244,30 @@ const Messenger: FC<{
       open={isMenuOpen}
       onClose={handleMenuClose}
     >
-      <MenuList sx={{ bgcolor: "#36404a", borderRadius: 0 }}>
+      {/* <MenuList sx={{ bgcolor: "#36404a", borderRadius: 0 }}> */}
+      <MenuItem
+        sx={{ justifyContent: "space-between", width: 170, py: 2, px: 3 }}
+        onClick={handleCopyClick}
+      >
+        <Typography color="#a6b0cf" fontSize={15}>
+          Copy
+        </Typography>
+        <ContentCopy sx={{ color: "#a6b0cf", fontSize: 15 }} />
+      </MenuItem>
+      {openRemoveChat ? (
         <MenuItem
-          sx={{ justifyContent: "space-around", width: 170, py: 2 }}
-          onClick={handleCopyClick}
+          sx={{ justifyContent: "space-between", width: 170, py: 2, px: 3 }}
+          onClick={handleDeleteClick}
         >
           <Typography color="#a6b0cf" fontSize={15}>
-            Copy
+            Remove
           </Typography>
-          <ContentCopy sx={{ color: "#a6b0cf", fontSize: 15 }} />
+          <DeleteOutlined sx={{ color: "#a6b0cf", fontSize: 16 }} />
         </MenuItem>
-        {openRemoveChat ? (
-          <MenuItem
-            sx={{ justifyContent: "space-around", width: 170, py: 2 }}
-            onClick={handleDeleteClick}
-          >
-            <Typography color="#a6b0cf" fontSize={15}>
-              Remove
-            </Typography>
-            <DeleteOutlined sx={{ color: "#a6b0cf", fontSize: 15 }} />
-          </MenuItem>
-        ) : (
-          <Box></Box>
-        )}
-      </MenuList>
+      ) : (
+        <Box></Box>
+      )}
+      {/* </MenuList> */}
     </Menu>
   );
 
@@ -288,7 +297,6 @@ const Messenger: FC<{
   var channelTyping = pusher.subscribe("Typing-Channel-" + conversationId);
 
   const handleUpdateTyping = (data: any) => {
-    console.log(data.isTyping);
     setIsTyping(data.isTyping);
     setFromUserId(data.from_user_id);
   };
@@ -789,7 +797,6 @@ const Messenger: FC<{
         ) : (
           <Box></Box>
         )}
-        {/* <Button onClick={(e)=>scrollToMessage(1)}>Search</Button> */}
       </Box>
       <Divider sx={{ bgcolor: "#36404a" }} />
       {/* Footer of screen */}

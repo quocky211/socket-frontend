@@ -23,10 +23,8 @@
   margin: 0 !important;
   background-color: "#36404a" !important;
   border-radius: 0 !important;
+  box-shadow: none !important;
 }
-/* .MuiPaper-root{
-  background-color: #303841 !important;
-} */
 
 @keyframes wave {
   0%, 60%, 100% {
